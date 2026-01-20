@@ -1,0 +1,3311 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000510">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>PANDORA: CHIẾN BINH CUỐI CÙNG</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,500;0,700;0,900;1,500&family=Mulish:wght@300;400;600;800&family=Philosopher:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        /* ==============================================================================================
+           1. HỆ THỐNG BIẾN TOÀN CỤC (CSS VARIABLES - THE DNA)
+           Định nghĩa màu sắc cho Tộc, Boss, và các trạng thái game.
+        ============================================================================================== */
+        :root {
+            /* --- MÀU SẮC CHỦ ĐẠO (CORE COLORS) --- */
+            --bg-void: #000510;       /* Đen thẳm vũ trụ */
+            --bg-glass: rgba(10, 25, 40, 0.75); /* Kính mờ xanh đen */
+            
+            /* --- FONT MAPPING (Đã đổi sang font hỗ trợ Tiếng Việt) --- */
+            --font-art: 'Philosopher', sans-serif;  /* Dùng cho Tiêu đề, Tên tộc */
+            --font-tech: 'Exo 2', sans-serif;       /* Dùng cho Số liệu, HUD, Admin */
+            --font-read: 'Mulish', sans-serif;      /* Dùng cho Nội dung câu hỏi */
+
+            /* --- MÀU SẮC TRẠNG THÁI (STATUS COLORS) --- */
+            --c-success: #00ffaa;     /* Xanh neon (Đúng) */
+            --c-warning: #ffcc00;     /* Vàng (Cảnh báo/Sắp hết giờ) */
+            --c-danger: #ff3344;      /* Đỏ (Sai/Nguy hiểm) */
+            --c-info: #00eeff;        /* Xanh dương (Thông tin) */
+            --c-white: #ffffff;
+            --c-dim: #6c7a89;         /* Màu chữ mờ */
+
+            /* --- MÀU SẮC TỘC (CLAN COLORS) --- */
+            /* 1. Omatikaya (Rừng) */
+            --forest-main: #00f2ff;   /* Xanh Biolum */
+            --forest-glow: #a45eff;   /* Tím Atokirina */
+            
+            /* 2. Metkayina (Biển) */
+            --water-main: #00ffbf;    /* Xanh ngọc lục bảo */
+            --water-glow: #008cff;    /* Xanh biển sâu */
+            
+            /* 3. People of Ash (Tro/Lửa) */
+            --ash-main: #ff5100;      /* Cam dung nham */
+            --ash-glow: #ffae00;      /* Vàng lửa */
+
+            /* --- MÀU SẮC BOSS (BOSS COLORS) --- */
+            --boss-amp: #c0c0c0;      /* Bạc kim loại (AMP Suit) */
+            --boss-ship: #ff0000;     /* Đỏ Lazer (Gunship) */
+            --boss-toruk: #ff3300;    /* Đỏ rực (Toruk Makto) */
+
+            /* --- CẤU HÌNH HIỆU ỨNG (FX CONFIG) --- */
+            --glass-border: 1px solid rgba(255, 255, 255, 0.12);
+            --glass-blur: blur(25px);
+            --shadow-float: 0 15px 35px rgba(0, 0, 0, 0.6);
+            --neon-pulse: 0 0 20px var(--c-info);
+            
+            /* --- LAYER Z-INDEX --- */
+            --z-bg: -1;
+            --z-particle: 1;
+            --z-ui: 100;
+            --z-modal: 1000;
+            --z-toast: 9999;
+        }
+
+        /* ==============================================================================================
+           2. CẤU HÌNH THEME ĐỘNG (DYNAMIC THEMES)
+           Thay đổi toàn bộ giao diện dựa trên class của body.
+        ============================================================================================== */
+
+        /* TỘC RỪNG (OMATIKAYA) - Mặc định */
+        body.theme-forest {
+            --theme-color: var(--forest-main);
+            --theme-sub: var(--forest-glow);
+            /* Ảnh nền rừng đêm phát sáng */
+            background-image: url('https://images3.alphacoders.com/131/1314660.jpeg');
+        }
+
+        /* TỘC BIỂN (METKAYINA) */
+        body.theme-water {
+            --theme-color: var(--water-main);
+            --theme-sub: var(--water-glow);
+            /* Ảnh nền đại dương Pandora */
+            background-image: url('https://images4.alphacoders.com/131/1316837.jpeg');
+        }
+
+        /* TỘC TRO (PEOPLE OF ASH) */
+        body.theme-ash {
+            --theme-color: var(--ash-main);
+            --theme-sub: var(--ash-glow);
+            /* Ảnh nền vùng núi lửa */
+            background-image: url('https://w0.peakpx.com/wallpaper/348/969/HD-wallpaper-avatar-3-the-seed-bearer.jpg');
+        }
+
+        /* CHẾ ĐỘ ĐẤU BOSS (KHI GẶP BOSS) */
+        body.boss-mode-1 { /* Boss Quaritch AMP */
+            --theme-color: var(--c-danger);
+            --theme-sub: var(--boss-amp);
+            filter: grayscale(0.2) contrast(1.2); /* Làm màu sắc gắt hơn */
+        }
+        
+        body.boss-mode-final { /* Boss Toruk */
+            --theme-color: var(--boss-toruk);
+            --theme-sub: var(--ash-glow);
+            background-image: none;
+            background-color: #220000; /* Nền đỏ đen */
+        }
+
+        /* ==============================================================================================
+           3. THIẾT LẬP CƠ BẢN (GLOBAL RESET & BASE)
+        ============================================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Chặn cuộn trang */
+            font-size: 16px;  /* Base size */
+        }
+
+        body {
+            background-color: var(--bg-void);
+            font-family: var(--font-read);
+            color: var(--c-white);
+            
+            /* Căn giữa toàn bộ nội dung */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            
+            /* Xử lý hình nền */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); /* Chuyển cảnh mượt */
+        }
+
+        /* Lớp phủ tối 4 góc (Vignette) để tập trung vào giữa */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Lớp phủ nhiễu hạt (Film Grain) tạo cảm giác điện ảnh */
+        body::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ==============================================================================================
+           4. HỆ THỐNG KHUNG CHỨA (LAYOUT CONTAINERS)
+        ============================================================================================== */
+        
+        /* App Container: Khung chính chứa toàn bộ game */
+        .app-container {
+            position: relative;
+            z-index: var(--z-ui);
+            width: 100%;
+            height: 100%;
+            max-width: 1400px; /* Giới hạn chiều rộng trên màn hình lớn */
+            
+            /* Hiệu ứng kính (Glassmorphism) */
+            background: var(--bg-glass);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            
+            /* Viền sáng tinh tế */
+            border-left: 1px solid rgba(255,255,255,0.08);
+            border-right: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Nội dung dài sẽ cuộn trong các screen con */
+            transition: border-color 0.5s;
+        }
+
+        /* Trên máy tính thì bo góc cho đẹp */
+        @media (min-width: 1024px) {
+            .app-container {
+                height: 95vh;
+                border-radius: 24px;
+                border: var(--glass-border);
+            }
+        }
+
+        /* ==============================================================================================
+           5. QUẢN LÝ MÀN HÌNH (SCREEN MANAGER SYSTEM)
+           Điều khiển việc chuyển đổi giữa Lobby, Game, Admin, Boss...
+        ============================================================================================== */
+        
+        .screen {
+            flex: 1;
+            display: none; /* Mặc định ẩn */
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto; /* Cho phép cuộn dọc */
+            overflow-x: hidden;
+            
+            /* Trạng thái khởi điểm của animation */
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+            filter: blur(10px);
+            
+            /* Animation mượt mà */
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .screen.active {
+            display: flex;
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            filter: blur(0);
+        }
+
+        /* Tùy chỉnh thanh cuộn (Scrollbar) cho đẹp */
+        .screen::-webkit-scrollbar {
+            width: 6px;
+        }
+        .screen::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+        .screen::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+        }
+        .screen::-webkit-scrollbar-thumb:hover {
+            background: var(--theme-color);
+        }
+
+        /* ==============================================================================================
+           6. CÁC CLASS TIỆN ÍCH HÌNH ẢNH (IMAGE PLACEHOLDERS)
+           Đây là nơi bạn sẽ chèn ảnh nhân vật và boss vào.
+           Mình tạo sẵn các class, bạn chỉ cần thay đường dẫn url() là xong.
+        ============================================================================================== */
+        
+        /* Avatar Nhân Vật (Hiển thị ở Lobby & Profile) */
+        .img-char-forest { background-image: url('neytiri.jpg'); }
+        .img-char-water  { background-image: url('ronal.jpg'); }
+        .img-char-ash    { background-image: url('varang.jpg'); }
+
+        /* Avatar Boss (Hiển thị ở màn hình Boss Fight) */
+        .img-boss-1      { background-image: url('quaritch.jpg'); }  /* Level 10 */
+        .img-boss-2      { background-image: url('quaritch2.jpg'); } /* Level 20 */
+        .img-boss-final  { background-image: url('toruk.jpg'); }     /* Level 30 */
+
+        /* Class chung cho việc hiển thị ảnh (Cover/Center) */
+        .bg-cover {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* ==============================================================================================
+           7. CÁC HIỆU ỨNG ANIMATION KEYFRAMES (CỐT LÕI)
+        ============================================================================================== */
+        
+        /* Hiệu ứng nổi lơ lửng (Floating) - Dùng cho Logo, Thẻ bài */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+
+        /* Hiệu ứng tỏa sáng (Pulse) - Dùng cho nút bấm quan trọng */
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(var(--theme-rgb), 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(var(--theme-rgb), 0); }
+            100% { box-shadow: 0 0 0 0 rgba(var(--theme-rgb), 0); }
+        }
+
+        /* Hiệu ứng rung lắc (Shake) - Dùng khi trả lời sai hoặc Boss xuất hiện */
+        @keyframes shakeHard {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        /* Hiệu ứng Glitch (Nhiễu sóng) - Dùng cho Text Admin/Boss */
+        @keyframes glitchSkew {
+            0% { transform: skew(0deg); }
+            20% { transform: skew(-2deg); }
+            40% { transform: skew(2deg); }
+            60% { transform: skew(-1deg); }
+            80% { transform: skew(1deg); }
+            100% { transform: skew(0deg); }
+        }
+
+        /* Kết thúc Phần 1 *//* ==============================================================================================
+           8. PART 2: HỆ THỐNG HẠT SỰ SỐNG (PARTICLE ENGINE CSS)
+           Định nghĩa hình dáng và chuyển động của các hạt (Woodsprites, Bubbles, Embers).
+           Javascript sẽ dùng các class này để tạo hạt ngẫu nhiên.
+        ============================================================================================== */
+
+        /* --- CẤU HÌNH CƠ BẢN CHO HẠT --- */
+        .particle {
+            position: absolute;
+            pointer-events: none; /* Không chặn click chuột vào các nút bên dưới */
+            z-index: var(--z-particle);
+            border-radius: 50%;
+            opacity: 0; /* Mặc định ẩn, sẽ hiện khi animation chạy */
+            will-change: transform, opacity; /* Tối ưu hóa hiệu năng render cho GPU */
+        }
+
+        /* -----------------------------------------------------------
+           A. HIỆU ỨNG TỘC RỪNG: ATOKIRINA (WOODSPRITES)
+           Mô tả: Hạt sứa bay chậm, phát sáng thần thánh, chuyển động mềm mại.
+        ----------------------------------------------------------- */
+        .p-forest {
+            background: radial-gradient(circle, #ffffff 20%, var(--forest-glow) 100%);
+            box-shadow: 
+                0 0 10px #ffffff, 
+                0 0 20px var(--forest-glow), 
+                0 0 40px var(--forest-glow); /* Glow 3 lớp cực mạnh */
+            
+            /* Animation bay lơ lửng */
+            animation-name: floatForest;
+            animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        @keyframes floatForest {
+            0% {
+                transform: translateY(110vh) translateX(0) scale(0.2);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8; /* Hiện rõ nhanh */
+            }
+            50% {
+                /* Giữa đường thì bay lệch sang phải/trái ngẫu nhiên */
+                transform: translateY(50vh) translateX(50px) scale(1);
+                opacity: 1;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-10vh) translateX(-30px) scale(0.2);
+                opacity: 0;
+            }
+        }
+
+        /* -----------------------------------------------------------
+           B. HIỆU ỨNG TỘC BIỂN: BUBBLES (BONG BÓNG KHÍ)
+           Mô tả: Trong suốt, có viền sáng, bay nhanh hơn, lắc lư nhẹ.
+        ----------------------------------------------------------- */
+        .p-water {
+            /* Tạo hình cầu trong suốt có điểm sáng phản chiếu */
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1) 20%, transparent 60%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 5px var(--water-main);
+            
+            animation-name: floatWater;
+            animation-timing-function: ease-in; /* Bay nhanh dần đều lên mặt nước */
+        }
+
+        @keyframes floatWater {
+            0% {
+                transform: translateY(110vh) translateX(0) scale(0.5);
+                opacity: 0;
+            }
+            20% { opacity: 0.6; }
+            50% {
+                transform: translateY(50vh) translateX(20px) scale(1.1); /* Lắc nhẹ */
+            }
+            75% {
+                transform: translateY(20vh) translateX(-20px) scale(1.2);
+            }
+            100% {
+                transform: translateY(-10vh) translateX(10px) scale(1.5); /* Nở to ra khi lên cao */
+                opacity: 0;
+            }
+        }
+
+        /* -----------------------------------------------------------
+           C. HIỆU ỨNG TỘC TRO: EMBERS (TÀN LỬA/TRO BỤI)
+           Mô tả: Màu cam đỏ, hình dạng méo mó, nhấp nháy (flicker).
+        ----------------------------------------------------------- */
+        .p-ash {
+            background: var(--ash-glow);
+            box-shadow: 
+                0 0 5px var(--ash-main), 
+                0 0 15px #ff0000;
+            /* Hình dạng méo mó không tròn hẳn */
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            
+            animation-name: floatAsh;
+            animation-timing-function: linear;
+        }
+
+        @keyframes floatAsh {
+            0% {
+                transform: translateY(110vh) translateX(0) rotate(0deg);
+                opacity: 0;
+                filter: brightness(1);
+            }
+            10% { opacity: 1; }
+            30% {
+                transform: translateY(80vh) translateX(-20px) rotate(90deg);
+                filter: brightness(2); /* Bùng sáng */
+            }
+            60% {
+                transform: translateY(40vh) translateX(30px) rotate(180deg);
+                filter: brightness(0.5); /* Tắt dần */
+            }
+            80% {
+                filter: brightness(1.5); /* Bùng lại lần nữa */
+            }
+            100% {
+                transform: translateY(-10vh) translateX(-10px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* ==============================================================================================
+           9. GIAO DIỆN CÔNG NGHỆ (HOLOGRAM & GLITCH UI)
+           Dùng cho màn hình Admin, Bảng luật chơi và Cảnh báo Boss.
+        ============================================================================================== */
+
+        /* Hiệu ứng khung Hologram (Viền sáng + Nền lưới) */
+        .holo-box {
+            position: relative;
+            background: rgba(10, 20, 30, 0.85); /* Nền tối bán trong suốt */
+            border: 1px solid var(--c-info);
+            box-shadow: 0 0 20px rgba(0, 238, 255, 0.2), inset 0 0 30px rgba(0, 238, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            
+            /* Tạo nền lưới Grid công nghệ */
+            background-image: 
+                linear-gradient(rgba(0, 238, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 238, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Đường quét Scanline chạy dọc (Giống màn hình radar) */
+        .holo-box::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+            background: var(--c-info);
+            box-shadow: 0 0 15px var(--c-info);
+            opacity: 0.6;
+            animation: scanline 4s linear infinite;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        @keyframes scanline {
+            0% { top: -10%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 110%; opacity: 0; }
+        }
+
+        /* -----------------------------------------------------------
+           HIỆU ỨNG CHỮ NHIỄU (GLITCH TEXT) - CỰC NGẦU CHO BOSS
+           Tạo ra 2 lớp chữ giả (xanh/đỏ) bị lệch vị trí.
+        ----------------------------------------------------------- */
+        .glitch-text {
+            position: relative;
+            color: #fff;
+            animation: glitchMain 1s infinite linear alternate-reverse;
+        }
+        
+        /* Lớp giả 1: Màu đỏ, lệch trái */
+        .glitch-text::before {
+            content: attr(data-text);
+            position: absolute; left: 2px; top: 0; width: 100%; height: 100%;
+            text-shadow: -2px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0); /* Cắt một phần chữ */
+            animation: glitchAnim1 5s infinite linear alternate-reverse;
+        }
+        
+        /* Lớp giả 2: Màu xanh, lệch phải */
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute; left: -2px; top: 0; width: 100%; height: 100%;
+            text-shadow: -2px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitchAnim2 5s infinite linear alternate-reverse;
+        }
+
+        /* Keyframes cắt chữ ngẫu nhiên */
+        @keyframes glitchAnim1 {
+            0% { clip: rect(31px, 9999px, 9px, 0); }
+            20% { clip: rect(80px, 9999px, 2px, 0); }
+            40% { clip: rect(3px, 9999px, 83px, 0); }
+            60% { clip: rect(69px, 9999px, 64px, 0); }
+            80% { clip: rect(25px, 9999px, 14px, 0); }
+            100% { clip: rect(56px, 9999px, 98px, 0); }
+        }
+        @keyframes glitchAnim2 {
+            0% { clip: rect(10px, 9999px, 91px, 0); }
+            20% { clip: rect(50px, 9999px, 30px, 0); }
+            40% { clip: rect(20px, 9999px, 10px, 0); }
+            60% { clip: rect(90px, 9999px, 80px, 0); }
+            80% { clip: rect(30px, 9999px, 40px, 0); }
+            100% { clip: rect(60px, 9999px, 50px, 0); }
+        }
+
+        /* ==============================================================================================
+           10. TIỆN ÍCH ANIMATION (UTILITY CLASSES)
+           Dùng để gán trực tiếp vào các thẻ HTML.
+        ============================================================================================== */
+        
+        /* Fade In: Hiện dần lên */
+        .anim-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Slide Up: Trượt từ dưới lên (Dùng cho nút bấm, thẻ bài) */
+        .anim-slide-up {
+            animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0; transform: translateY(30px);
+        }
+        @keyframes slideUp { 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* Pulse: Nhịp thở cho nút quan trọng (Start Game, Boss Fight) */
+        .anim-pulse {
+            animation: pulseSimple 2s infinite ease-in-out;
+        }
+        @keyframes pulseSimple {
+            0% { transform: scale(1); box-shadow: 0 0 0 rgba(255,255,255,0); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px var(--theme-color); }
+            100% { transform: scale(1); box-shadow: 0 0 0 rgba(255,255,255,0); }
+        }
+
+        /* Float: Trôi lơ lửng (Dùng cho Logo, Avatar) */
+        .anim-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Kết thúc Phần 2 *//* ==============================================================================================
+           11. PART 3: BỘ UI KIT "PANDORA" (INTERFACE COMPONENTS)
+           Định nghĩa hình dáng, màu sắc của nút bấm, ô nhập liệu và các thẻ.
+           Đây là "skin" của toàn bộ trò chơi.
+        ============================================================================================== */
+
+        /* --- TYPOGRAPHY UTILITIES (KIỂU CHỮ & HIỆU ỨNG CHỮ) --- */
+        
+        /* Font nghệ thuật (Tiêu đề lớn) */
+        .font-art { 
+            font-family: var(--font-art); 
+            letter-spacing: 1px;
+        }
+        
+        /* Font công nghệ (Số liệu, HUD) */
+        .font-tech { 
+            font-family: var(--font-tech); 
+            letter-spacing: 2px; 
+            text-transform: uppercase; 
+        }
+        
+        /* Font nội dung (Dễ đọc) */
+        .font-body { 
+            font-family: var(--font-read); 
+            line-height: 1.6;
+        }
+        
+        /* Hiệu ứng chữ phát sáng (Neon Text) */
+        .text-glow {
+            color: var(--theme-color);
+            text-shadow: 0 0 10px var(--theme-color), 0 0 20px var(--theme-color);
+        }
+        
+        /* Hiệu ứng chữ Gradient (Kim loại) */
+        .text-gradient {
+            background: linear-gradient(to bottom, #ffffff 0%, var(--theme-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        /* --- GLASS CARDS (THẺ KÍNH TRONG SUỐT) --- */
+        /* Dùng làm khung chứa câu hỏi, bảng xếp hạng, khung luật chơi */
+        .card-glass {
+            background: var(--bg-glass); /* Nền mờ định nghĩa ở Part 1 */
+            border: var(--glass-border);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur); /* Hỗ trợ Safari */
+            
+            border-radius: 16px;
+            box-shadow: var(--shadow-float);
+            padding: 25px;
+            
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden; /* Để chứa các hiệu ứng quét sáng bên trong */
+        }
+        
+        /* Hiệu ứng khi di chuột vào thẻ */
+        .card-glass:hover {
+            border-color: var(--theme-color);
+            box-shadow: 0 0 30px rgba(var(--theme-color), 0.3);
+            transform: translateY(-5px);
+        }
+
+        /* --- INPUT FIELDS (Ô NHẬP LIỆU) --- */
+        /* Thiết kế tối giản, chỉ hiện gạch chân */
+        .input-pandora-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 30px auto;
+        }
+
+        .input-pandora {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 2px solid var(--c-dim);
+            
+            color: var(--c-white);
+            font-family: var(--font-tech);
+            font-size: 1.4rem;
+            text-align: center;
+            text-transform: uppercase;
+            
+            transition: all 0.4s ease;
+            border-radius: 12px 12px 0 0;
+        }
+
+        /* Trạng thái khi click vào nhập */
+        .input-pandora:focus {
+            background: rgba(0, 0, 0, 0.6);
+            border-bottom-color: var(--theme-color);
+            box-shadow: 0 10px 20px -10px var(--theme-color); /* Glow phía dưới */
+            letter-spacing: 3px; /* Chữ giãn ra tạo hiệu ứng điện ảnh */
+        }
+
+        .input-pandora::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+            font-style: italic;
+            letter-spacing: 1px;
+            font-size: 1rem;
+        }
+
+        /* --- BUTTONS SYSTEM (HỆ THỐNG NÚT BẤM) --- */
+        
+        /* 1. NÚT CHÍNH (PRIMARY ACTION) - Phong cách Na'vi/Sci-fi */
+        /* Dùng cho: Bắt đầu, Kết nối, Chọn đáp án */
+        .btn-action {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 320px;
+            padding: 18px 30px;
+            
+            background: rgba(0, 20, 40, 0.6); /* Nền tối nhẹ */
+            color: var(--theme-color);
+            border: 1px solid var(--theme-color);
+            
+            font-family: var(--font-tech);
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            
+            /* Cắt góc kiểu công nghệ (Polygon Shape) */
+            clip-path: polygon(
+                15px 0, 100% 0, 
+                100% calc(100% - 15px), 
+                calc(100% - 15px) 100%, 
+                0 100%, 0 15px
+            );
+        }
+
+        /* Hiệu ứng nền màu chạy qua khi hover (Slide Fill) */
+        .btn-action::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 0%; height: 100%;
+            background: var(--theme-color);
+            z-index: -1; /* Nằm dưới chữ */
+            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Trạng thái Hover */
+        .btn-action:hover {
+            color: #000; /* Chữ chuyển sang đen để tương phản với nền sáng */
+            box-shadow: 0 0 30px var(--theme-color); /* Tỏa sáng neon */
+            transform: translateY(-2px);
+        }
+
+        .btn-action:hover::before {
+            width: 100%; /* Lấp đầy nền */
+        }
+
+        .btn-action:active {
+            transform: scale(0.96); /* Nhún nhẹ khi bấm */
+        }
+
+        /* 2. NÚT PHỤ (SECONDARY) - Phong cách RDA (Quân sự, Vuông vức) */
+        /* Dùng cho: Thoát, Reset, Các nút nhỏ */
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--c-dim);
+            padding: 10px 20px;
+            font-family: var(--font-read);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--c-white);
+            border-color: var(--c-white);
+        }
+
+        /* 3. NÚT NGUY HIỂM (DANGER) - Dùng cho Boss Fight / Xóa dữ liệu */
+        .btn-danger {
+            border-color: var(--c-danger);
+            color: var(--c-danger);
+        }
+        
+        .btn-danger::before { 
+            background: var(--c-danger); 
+        }
+        
+        .btn-danger:hover {
+            color: #fff;
+            box-shadow: 0 0 30px var(--c-danger);
+        }
+
+        /* 4. NÚT LIÊN KẾT QUAY LẠI (BACK LINK) - Đã sửa cho dễ bấm */
+        .btn-link-back {
+            margin-top: 20px;
+            color: var(--c-dim);
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-block;
+            padding: 10px 20px;
+            border: 1px solid transparent;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+        .btn-link-back:hover {
+            color: var(--theme-color);
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.1);
+            transform: translateX(-5px); /* Di chuyển nhẹ sang trái báo hiệu quay lại */
+        }
+        .btn-link-back i { margin-right: 5px; }
+
+        /* 5. NÚT KHÓA BẢO MẬT (ADMIN ACCESS KEY) */
+        /* Nút vân tay ẩn ở góc màn hình */
+        .admin-key-container {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            z-index: var(--z-ui);
+        }
+
+        .btn-admin-key {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Hiệu ứng nảy */
+            font-size: 1.4rem;
+        }
+
+        .btn-admin-key:hover {
+            border-color: var(--theme-sub);
+            color: var(--theme-sub);
+            box-shadow: 0 0 20px var(--theme-sub);
+            transform: rotate(90deg) scale(1.1); /* Xoay và phóng to */
+            background: rgba(0,0,0,0.8);
+        }
+
+        /* --- CLAN CARD (THẺ CHỌN TỘC 3D) --- */
+        /* Thiết kế thẻ bài lớn, đẹp cho phần chọn tộc ở Lobby */
+        .clan-card-wrapper {
+            perspective: 1200px; /* Tạo chiều sâu 3D */
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .clan-card {
+            position: relative;
+            width: 100%;
+            max-width: 180px; /* Kích thước thẻ lớn hơn bản cũ */
+            height: 280px;
+            border-radius: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            
+            /* Background Image sẽ được inline style ở HTML */
+            background-size: cover;
+            background-position: center;
+            
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            
+            /* Filter mặc định hơi tối để làm nổi thẻ đang chọn */
+            filter: grayscale(0.4) brightness(0.8);
+        }
+
+        /* Lớp phủ gradient đen bên dưới để làm nổi chữ */
+        .clan-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 50%);
+            opacity: 0.9;
+            transition: 0.3s;
+        }
+
+        /* Thông tin Tộc (Icon + Tên) */
+        .clan-info {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            padding: 20px;
+            text-align: center;
+            z-index: 2;
+            transform: translateY(10px); /* Hơi ẩn xuống */
+            transition: 0.4s;
+        }
+
+        .clan-icon {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: #fff;
+            text-shadow: 0 0 15px currentColor;
+            opacity: 0.8;
+            transition: 0.3s;
+        }
+
+        .clan-title {
+            font-family: var(--font-tech);
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .clan-desc {
+            font-family: var(--font-read);
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.7);
+            margin-top: 5px;
+            opacity: 0; /* Mặc định ẩn mô tả */
+            transform: translateY(10px);
+            transition: 0.3s;
+        }
+
+        /* --- TRẠNG THÁI HOVER (DI CHUỘT) --- */
+        .clan-card:hover {
+            transform: translateY(-15px) scale(1.05); /* Nổi lên */
+            border-color: rgba(255, 255, 255, 0.8);
+            filter: grayscale(0) brightness(1.1); /* Sáng lên */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+        .clan-card:hover .clan-info {
+            transform: translateY(0);
+        }
+        .clan-card:hover .clan-desc {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- TRẠNG THÁI SELECTED (ĐƯỢC CHỌN) --- */
+        .clan-card.selected {
+            border-color: var(--theme-color);
+            box-shadow: 0 0 50px var(--theme-color), 0 0 20px var(--theme-color) inset; /* Glow mạnh */
+            z-index: 5;
+            transform: scale(1.15); /* Phóng to nhất */
+            filter: grayscale(0) brightness(1.2);
+        }
+        
+        .clan-card.selected .clan-icon {
+            color: var(--theme-color);
+            animation: pulseGlow 2s infinite; /* Icon đập thình thịch */
+            transform: scale(1.2);
+        }
+        
+        .clan-card.selected::before {
+            /* Viền sáng chạy quanh thẻ */
+            content: '';
+            position: absolute; inset: 0;
+            border: 2px solid var(--theme-color);
+            border-radius: 14px;
+            animation: borderFlash 1s;
+        }
+
+        /* Animation viền nháy khi chọn */
+        @keyframes borderFlash {
+            0% { opacity: 0; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- CẤU HÌNH MÀU RIÊNG CHO TỪNG THẺ --- */
+        /* Giúp CSS biết màu nào để glow khi chưa có JS can thiệp */
+        .clan-card[data-clan="forest"] { --card-glow: var(--forest-main); }
+        .clan-card[data-clan="water"] { --card-glow: var(--water-main); }
+        .clan-card[data-clan="ash"] { --card-glow: var(--ash-main); }
+        
+        /* Override màu hover dựa trên data-clan */
+        .clan-card[data-clan="forest"]:hover { border-color: var(--forest-main); }
+        .clan-card[data-clan="water"]:hover { border-color: var(--water-main); }
+        .clan-card[data-clan="ash"]:hover { border-color: var(--ash-main); }
+
+        /* Kết thúc Phần 3 *//* Kết thúc toàn bộ CSS */
+/* Kết thúc toàn bộ CSS */
+    </style>
+</head>
+<body class="theme-forest">
+
+    <audio id="bgm-lobby" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="bgm-game" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2023/04/12/audio_7306263b61.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="bgm-boss" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/09/audio_c8c90e38c5.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="app-container" id="app">
+        
+        <div id="sc-lobby" class="screen active" style="justify-content: center; align-items: center;">
+            
+            <div class="admin-key-container">
+                <div class="btn-admin-key" onclick="App.openAdmin()" title="Truy cập Hệ thống Eywa">
+                    <i class="fas fa-fingerprint"></i>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 30px; animation: float 6s ease-in-out infinite;">
+                <h1 class="font-art text-gradient" style="font-size: 4.5rem; line-height: 0.9; margin: 0; filter: drop-shadow(0 0 20px rgba(0,240,255,0.4));">
+                    AVATAR
+                </h1>
+                
+                <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 15px; opacity: 0.8;">
+                    <span style="height: 1px; width: 40px; background: linear-gradient(90deg, transparent, var(--theme-color));"></span>
+                    <span class="font-tech text-glow" style="font-size: 1rem; letter-spacing: 4px; color: var(--c-white);">
+                        CHIẾN BINH CUỐI CÙNG
+                    </span>
+                    <span style="height: 1px; width: 40px; background: linear-gradient(90deg, var(--theme-color), transparent);"></span>
+                </div>
+            </div>
+
+            <div style="text-align: center; width: 100%; z-index: 10;">
+                <p class="font-body" style="font-size: 0.9rem; color: var(--c-dim); margin-bottom: 25px; letter-spacing: 1px;">
+                    CHỌN NGUỒN GỐC CỦA BẠN ĐỂ KẾT NỐI
+                </p>
+                
+                <div class="clan-card-wrapper">
+                    
+                    <div class="clan-card selected img-char-forest" 
+                         data-clan="forest" 
+                         onclick="App.selectClan(this, 'forest')">
+                        
+                        <div class="clan-info">
+                            <div class="clan-icon"><i class="fas fa-tree"></i></div>
+                            <div class="clan-title">OMATIKAYA</div>
+                            <div class="clan-desc">
+                                "Chúng ta là hơi thở của rừng."<br>
+                                <span style="color: var(--forest-main); font-size: 0.7rem;">+ Tốc độ leo trèo</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="clan-card img-char-water" 
+                         data-clan="water" 
+                         onclick="App.selectClan(this, 'water')">
+                        
+                        <div class="clan-info">
+                            <div class="clan-icon"><i class="fas fa-water"></i></div>
+                            <div class="clan-title">METKAYINA</div>
+                            <div class="clan-desc">
+                                "Nước kết nối vạn vật."<br>
+                                <span style="color: var(--water-main); font-size: 0.7rem;">+ Thở dưới nước</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="clan-card img-char-ash" 
+                         data-clan="ash" 
+                         onclick="App.selectClan(this, 'ash')">
+                        
+                        <div class="clan-info">
+                            <div class="clan-icon"><i class="fas fa-fire"></i></div>
+                            <div class="clan-title">MANGKWAN</div>
+                            <div class="clan-desc">
+                                "Lửa tái sinh tất cả."<br>
+                                <span style="color: var(--ash-main); font-size: 0.7rem;">+ Kháng nhiệt</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div style="width: 100%; max-width: 400px; text-align: center; margin-top: 10px;">
+                
+                <div class="input-pandora-wrapper anim-slide-up" style="animation-delay: 0.2s;">
+                    <input type="text" id="username" class="input-pandora" placeholder="NHẬP TÊN CHIẾN BINH..." autocomplete="off" maxlength="15">
+                </div>
+
+<button class="btn-action anim-pulse" onclick="App.preRegister()" style="margin-top: 10px; width: 100%; background: rgba(0,20,40,0.8); z-index: 100;">
+                    <span>KẾT NỐI EYWA</span>                </button>
+
+                <div class="anim-slide-up" style="margin-top: 30px; font-size: 0.7rem; color: rgba(255,255,255,0.15); font-style: italic; animation-delay: 0.6s;">
+                    Pandora Network v3.0 • Designed by Hoang Quan
+                </div>
+            </div>
+
+        </div>
+<style>
+            /* Bố cục nội dung luật chơi */
+            .rules-content {
+                flex: 1;
+                overflow-y: auto;
+                padding-right: 10px;
+                margin: 20px 0;
+            }
+            
+            /* Tùy chỉnh thanh cuộn bên trong bảng luật */
+            .rules-content::-webkit-scrollbar { width: 4px; }
+            .rules-content::-webkit-scrollbar-thumb { background: var(--c-info); border-radius: 4px; }
+
+            /* Các mục luật (Scoring, Abilities, Boss) */
+            .rule-section {
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 1px dashed rgba(255,255,255,0.1);
+            }
+            .rule-section:last-child { border-bottom: none; }
+
+            .rule-header {
+                font-family: var(--font-tech);
+                color: var(--theme-color);
+                font-size: 1.2rem;
+                margin-bottom: 15px;
+                display: flex; align-items: center; gap: 10px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            /* Danh sách điểm số */
+            .score-list li {
+                margin-bottom: 8px;
+                padding-left: 20px;
+                position: relative;
+                color: rgba(255,255,255,0.8);
+            }
+            .score-list li::before {
+                content: "►";
+                position: absolute; left: 0; color: var(--theme-color); font-size: 0.8rem; top: 2px;
+            }
+
+            /* Lưới hiển thị 6 Năng lực (Ability Grid) */
+            .ability-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr; /* Chia 2 cột */
+                gap: 15px;
+            }
+            
+            .ab-card {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                padding: 12px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                transition: 0.3s;
+            }
+            .ab-card:hover {
+                background: rgba(255, 255, 255, 0.08);
+                border-color: rgba(255, 255, 255, 0.3);
+                transform: translateX(5px);
+            }
+
+            .ab-icon-display {
+                width: 40px; height: 40px;
+                border-radius: 50%;
+                display: flex; justify-content: center; align-items: center;
+                font-size: 1rem;
+                border: 1px solid currentColor;
+                box-shadow: 0 0 10px rgba(0,0,0,0.5);
+                flex-shrink: 0;
+            }
+
+            .ab-text h4 { margin: 0; font-family: var(--font-tech); font-size: 0.9rem; color: #fff; }
+            .ab-text p { margin: 2px 0 0; font-size: 0.7rem; color: #aaa; }
+
+            /* Khu vực Cảnh báo Boss (Danger Zone) */
+            .boss-warning-box {
+                background: linear-gradient(45deg, rgba(255, 51, 68, 0.1), transparent);
+                border: 1px solid var(--c-danger);
+                border-radius: 8px;
+                padding: 15px;
+                position: relative;
+                overflow: hidden;
+            }
+            .boss-warning-box::before {
+                content: "";
+                position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+                background: var(--c-danger);
+                box-shadow: 0 0 10px var(--c-danger);
+            }
+
+            /* Responsive cho mobile */
+            @media (max-width: 600px) {
+                .ability-grid { grid-template-columns: 1fr; } /* Về 1 cột trên điện thoại */
+                .holo-box { padding: 20px !important; }
+            }
+        </style>
+
+        <div id="sc-rules" class="screen">
+            
+            <div class="holo-box anim-slide-up" style="max-width: 700px; width: 100%; margin: 0 auto; padding: 30px; height: 85vh; display: flex; flex-direction: column;">
+                
+                <div style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--glass-border);">
+                    <h2 class="font-tech text-glow" style="font-size: 2rem; margin: 0; color: var(--theme-color);">
+                        GIAO THỨC SINH TỒN
+                    </h2>
+                    <div style="font-size: 0.8rem; color: var(--c-info); letter-spacing: 2px; margin-top: 5px;">
+                        SYSTEM: ONLINE // ACCESS GRANTED
+                    </div>
+                </div>
+
+                <div class="rules-content font-body">
+                    
+                    <div class="rule-section">
+                        <div class="rule-header">
+                            <i class="fas fa-chart-line"></i> NHIỆM VỤ & ĐIỂM SỐ
+                        </div>
+                        <ul class="score-list" style="list-style: none; padding: 0;">
+                            <li>Trả lời đúng: <strong style="color:var(--c-success)">+200 Điểm</strong> gốc.</li>
+                            <li>Combo liên hoàn: Đúng liên tiếp để nhân hệ số <strong>x1.5, x2.0</strong>.</li>
+                            <li><strong style="color:var(--c-warning)">Áp lực thời gian:</strong> Sau 10 giây đầu, điểm thưởng giảm dần (-10 điểm/giây).</li>
+                            <li>Trả lời sai: Mất chuỗi Combo và không có điểm.</li>
+                        </ul>
+                    </div>
+
+                    <div class="rule-section">
+                        <div class="rule-header">
+                            <i class="fas fa-hand-holding-magic"></i> 6 QUYỀN NĂNG EYWA
+                        </div>
+                        <div class="ability-grid">
+                            <div class="ab-card">
+                                <div class="ab-icon-display" style="color:#00f0ff; box-shadow:0 0 10px #00f0ff;">
+                                    <i class="fas fa-feather-alt"></i>
+                                </div>
+                                <div class="ab-text">
+                                    <h4>IKRAN</h4>
+                                    <p>Bỏ qua câu hỏi khó (Vẫn tính là qua màn).</p>
+                                </div>
+                            </div>
+                            <div class="ab-card">
+                                <div class="ab-icon-display" style="color:#00ff88; box-shadow:0 0 10px #00ff88;">
+                                    <i class="fas fa-snowflake"></i>
+                                </div>
+                                <div class="ab-text">
+                                    <h4>HẠT GIỐNG</h4>
+                                    <p>Đóng băng thời gian để suy nghĩ.</p>
+                                </div>
+                            </div>
+                            <div class="ab-card">
+                                <div class="ab-icon-display" style="color:#a45eff; box-shadow:0 0 10px #a45eff;">
+                                    <i class="fas fa-undo-alt"></i>
+                                </div>
+                                <div class="ab-text">
+                                    <h4>CÂY LINH HỒN</h4>
+                                    <p>Được chọn lại 1 lần nếu trả lời sai.</p>
+                                </div>
+                            </div>
+                            <div class="ab-card">
+                                <div class="ab-icon-display" style="color:#ffcc00; box-shadow:0 0 10px #ffcc00;">
+                                    <i class="fas fa-link"></i>
+                                </div>
+                                <div class="ab-text">
+                                    <h4>GIAO CẢM</h4>
+                                    <p>Nhân đôi (x2) số điểm của câu hỏi này.</p>
+                                </div>
+                            </div>
+                            <div class="ab-card">
+                                <div class="ab-icon-display" style="color:#ff3333; box-shadow:0 0 10px #ff3333;">
+                                    <i class="fas fa-paw"></i>
+                                </div>
+                                <div class="ab-text">
+                                    <h4>THANATOR</h4>
+                                    <p>Loại bỏ ngay lập tức 2 phương án sai.</p>
+                                </div>
+                            </div>
+                            <div class="ab-card">
+                                <div class="ab-icon-display" style="color:#ffffff; box-shadow:0 0 10px #ffffff;">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <div class="ab-text">
+                                    <h4>Ý CHÍ EYWA</h4>
+                                    <p>Hiện đáp án đúng (Auto Win).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rule-section">
+                        <div class="rule-header" style="color:var(--c-danger)">
+                            <i class="fas fa-skull-crossbones"></i> CẢNH BÁO MỐI ĐE DỌA
+                        </div>
+                        <div class="boss-warning-box">
+                            <p style="margin: 0 0 10px 0; font-size: 0.9rem;">
+                                Quân đoàn RDA sẽ tấn công tại các mốc quan trọng:
+                            </p>
+                            <div style="display:flex; justify-content:space-between; font-family:var(--font-tech); font-size:0.9rem;">
+                                <span><i class="fas fa-robot"></i> LEVEL 10: AMP SUIT</span>
+                                <span style="color:var(--c-danger)">HIỂM HỌA CẤP 1</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-family:var(--font-tech); font-size:0.9rem; margin-top:5px;">
+                                <span><i class="fas fa-plane"></i> LEVEL 20: GUNSHIP</span>
+                                <span style="color:var(--c-danger)">HIỂM HỌA CẤP 2</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-family:var(--font-tech); font-size:0.9rem; margin-top:5px;">
+                                <span><i class="fas fa-dragon"></i> LEVEL 30: TORUK</span>
+                                <span style="color:var(--c-danger)">TRÙM CUỐI</span>
+                            </div>
+                            <hr style="border:0; border-top:1px dashed rgba(255,50,50,0.3); margin: 10px 0;">
+                            <p style="font-size: 0.8rem; font-style: italic; color: #ffaaaa; margin: 0;">
+                                *Chiến thắng Boss để nhận điểm thưởng khổng lồ và quyền chọn lại Năng lực!
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="margin-top: auto; text-align: center;">
+                    
+                    <button class="btn-action anim-pulse" onclick="App.confirmRules()">
+                        <span>TÔI ĐÃ SẴN SÀNG</span>
+                    </button>
+                    
+                    <br>
+                    
+                    <button class="btn-link-back" onclick="App.backToLobby()">
+                        <i class="fas fa-chevron-left"></i> Quay lại chọn nhân vật
+                    </button>
+                    
+                </div>
+
+            </div>
+        </div><div id="sc-waiting" class="screen" style="justify-content: center; align-items: center; overflow: hidden;">
+            
+            <div class="neural-loader-wrapper">
+                <div class="neural-ring ring-outer"></div>
+                <div class="neural-ring ring-middle"></div>
+                <div class="neural-ring ring-inner"></div>
+                
+                <div class="neural-core"></div>
+                
+                <div class="neural-particles"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; position: relative; z-index: 2;">
+                <h2 class="font-tech text-glow anim-pulse" style="font-size: 2rem; margin-bottom: 10px; color: var(--theme-color);">
+                    ĐANG THIẾT LẬP LIÊN KẾT...
+                </h2>
+                <p class="font-body" style="color: var(--c-dim); font-size: 0.9rem; letter-spacing: 1px;">
+                    Chờ tín hiệu kích hoạt từ Mạng Chủ (Admin)
+                </p>
+            </div>
+
+            <div class="player-id-card anim-slide-up" style="animation-delay: 0.3s;">
+                <div class="id-scan-line"></div>
+                
+                <div class="id-avatar-box">
+                    <img id="wait-avatar" src="" alt="Avatar" class="id-img">
+                </div>
+                
+                <div class="id-info">
+                    <div class="font-tech" style="font-size: 0.7rem; color: var(--theme-sub); margin-bottom: 2px;">CHIẾN BINH</div>
+                    <div id="wait-name" class="font-art" style="font-size: 1.5rem; color: #fff; line-height: 1.2;">...</div>
+                    
+                    <div class="id-clan-tag">
+                        <span style="color: var(--c-dim);">TỘC:</span> 
+                        <span id="wait-clan" style="color: var(--theme-color); font-weight: bold; text-transform: uppercase;">...</span>
+                    </div>
+                </div>
+
+                <div class="id-status">
+                    <i class="fas fa-wifi"></i> READY
+                </div>
+            </div>
+
+        </div>
+
+        <style>
+            /* 1. Neural Loader (Vòng xoay thần kinh) */
+            .neural-loader-wrapper {
+                position: relative;
+                width: 180px;
+                height: 180px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .neural-ring {
+                position: absolute;
+                border-radius: 50%;
+                border: 2px solid transparent;
+            }
+
+            /* Vòng ngoài cùng */
+            .ring-outer {
+                width: 100%; height: 100%;
+                border-top-color: var(--theme-color);
+                border-left-color: rgba(255,255,255,0.1);
+                animation: spin 3s linear infinite;
+                box-shadow: 0 0 20px var(--theme-color);
+            }
+
+            /* Vòng giữa */
+            .ring-middle {
+                width: 70%; height: 70%;
+                border-bottom-color: var(--theme-sub);
+                border-right-color: rgba(255,255,255,0.1);
+                animation: spin 5s linear infinite reverse; /* Xoay ngược chiều */
+            }
+
+            /* Vòng trong */
+            .ring-inner {
+                width: 40%; height: 40%;
+                border: 2px dashed rgba(255, 255, 255, 0.5);
+                animation: spin 10s linear infinite;
+            }
+
+            /* Lõi trung tâm */
+            .neural-core {
+                width: 15px; height: 15px;
+                background: #fff;
+                border-radius: 50%;
+                box-shadow: 0 0 30px #fff, 0 0 60px var(--theme-color);
+                animation: pulseGlow 1s infinite alternate;
+            }
+
+            @keyframes spin { 
+                0% { transform: rotate(0deg); } 
+                100% { transform: rotate(360deg); } 
+            }
+
+            /* 2. Player ID Card (Thẻ định danh Hologram) */
+            .player-id-card {
+                margin-top: 40px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-left: 4px solid var(--theme-color);
+                border-radius: 12px;
+                padding: 15px 20px;
+                
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                
+                position: relative;
+                overflow: hidden;
+                width: 90%;
+                max-width: 380px;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            }
+
+            /* Hiệu ứng đường quét (Scan line) chạy qua thẻ */
+            .id-scan-line {
+                position: absolute;
+                top: 0; left: -20%; width: 5px; height: 100%;
+                background: rgba(255, 255, 255, 0.8);
+                box-shadow: 0 0 15px #fff;
+                animation: scanID 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                z-index: 1;
+                opacity: 0.5;
+                transform: skewX(-20deg);
+            }
+
+            @keyframes scanID {
+                0% { left: -20%; opacity: 0; }
+                10% { opacity: 1; }
+                90% { opacity: 1; }
+                100% { left: 120%; opacity: 0; }
+            }
+
+            .id-avatar-box {
+                width: 60px; height: 60px;
+                border-radius: 50%;
+                border: 2px solid var(--theme-color);
+                overflow: hidden;
+                box-shadow: 0 0 15px var(--theme-color);
+                flex-shrink: 0;
+            }
+
+            .id-img {
+                width: 100%; height: 100%; object-fit: cover;
+            }
+
+            .id-info {
+                flex: 1;
+                text-align: left;
+                z-index: 2; /* Nổi lên trên scan line */
+            }
+
+            .id-clan-tag {
+                font-family: var(--font-tech);
+                font-size: 0.8rem;
+                margin-top: 5px;
+                letter-spacing: 1px;
+            }
+
+            /* Trạng thái Ready nhấp nháy */
+            .id-status {
+                font-family: var(--font-tech);
+                color: var(--c-success);
+                font-size: 0.8rem;
+                font-weight: bold;
+                animation: blink 2s infinite;
+                border: 1px solid var(--c-success);
+                padding: 5px 10px;
+                border-radius: 4px;
+                background: rgba(0, 255, 170, 0.1);
+            }
+
+            @keyframes blink { 
+                0%, 100% { opacity: 1; } 
+                50% { opacity: 0.5; } 
+            }
+        </style><div id="sc-game" class="screen">
+            
+            <div class="game-hud">
+                
+                <div class="hud-module left anim-slide-up" style="animation-delay: 0.1s;">
+                    <div class="hud-label font-tech">ĐIỂM DANH VỌNG</div>
+                    <div class="hud-value font-tech text-glow" id="score-val">0</div>
+                </div>
+
+                <div class="hud-center-wrapper anim-slide-up" style="animation-delay: 0.2s;">
+                    <div id="combo-display" class="combo-ring">
+                        <div class="combo-inner">
+                            <span class="combo-label">COMBO</span>
+                            <span class="combo-num" id="combo-n">x1.0</span>
+                        </div>
+                        <svg class="combo-svg" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45"></circle>
+                        </svg>
+                    </div>
+
+                    <div class="clan-emblem-bg">
+                        <i class="fas fa-tree" id="hud-clan-icon"></i>
+                    </div>
+                </div>
+
+                <div class="hud-module right anim-slide-up" style="animation-delay: 0.1s;">
+                    <div class="hud-label font-tech">THỜI GIAN</div>
+                    <div class="hud-value font-tech" id="timer-val" style="color: #fff;">20</div>
+                </div>
+            </div>
+
+            <div class="card-glass question-card anim-float" style="margin-top: 10px;">
+                <div class="q-header">
+                    <span class="font-tech" style="color: var(--theme-color); font-size: 0.9rem;">
+                        <i class="fas fa-database"></i> DỮ LIỆU SỐ <span id="q-curr">1</span>/30
+                    </span>
+                    <div class="q-scan-bar"></div>
+                </div>
+                
+                <div class="q-content font-read" id="q-text">
+                    Đang giải mã tín hiệu từ Cây Linh Hồn...
+                </div>
+
+                <div class="corner-deco tl"></div>
+                <div class="corner-deco tr"></div>
+                <div class="corner-deco bl"></div>
+                <div class="corner-deco br"></div>
+            </div>
+
+            <div class="options-grid" id="options-area">
+                </div>
+
+            <div class="abilities-container anim-slide-up" style="animation-delay: 0.3s;">
+                <div class="ab-label font-tech">
+                    <span style="opacity:0.5">//</span> KẾT NỐI EYWA <span style="opacity:0.5">//</span>
+                </div>
+                
+                <div class="ab-bar">
+                    <div class="ab-slot" onclick="App.useAbility('ikran')" data-tooltip="IKRAN: Bỏ qua câu hỏi">
+                        <div class="ab-icon ab-ikran"><i class="fas fa-feather-alt"></i></div>
+                        <div class="ab-key">1</div>
+                    </div>
+                    
+                    <div class="ab-slot" onclick="App.useAbility('seed')" data-tooltip="HẠT GIỐNG: Dừng thời gian">
+                        <div class="ab-icon ab-seed"><i class="fas fa-snowflake"></i></div>
+                        <div class="ab-key">2</div>
+                    </div>
+                    
+                    <div class="ab-slot" onclick="App.useAbility('tree')" data-tooltip="CÂY LINH HỒN: Làm lại câu sai">
+                        <div class="ab-icon ab-tree"><i class="fas fa-undo-alt"></i></div>
+                        <div class="ab-key">3</div>
+                    </div>
+                    
+                    <div class="ab-slot" onclick="App.useAbility('tsahaylu')" data-tooltip="GIAO CẢM: Nhân đôi điểm">
+                        <div class="ab-icon ab-tsahaylu"><i class="fas fa-link"></i></div>
+                        <div class="ab-key">4</div>
+                    </div>
+                    
+                    <div class="ab-slot" onclick="App.useAbility('thanator')" data-tooltip="THANATOR: Loại bỏ 2 sai">
+                        <div class="ab-icon ab-thanator"><i class="fas fa-paw"></i></div>
+                        <div class="ab-key">5</div>
+                    </div>
+                    
+                    <div class="ab-slot" onclick="App.useAbility('eywa')" data-tooltip="EYWA: Hiện đáp án đúng">
+                        <div class="ab-icon ab-eywa"><i class="fas fa-eye"></i></div>
+                        <div class="ab-key">6</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <style>
+            /* 1. HUD STYLES (THANH TRẠNG THÁI) */
+            .game-hud {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 10px;
+                margin-bottom: 10px;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+                background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+                position: relative;
+                z-index: 10;
+            }
+            .hud-module { text-align: center; min-width: 90px; }
+            .hud-label { 
+                font-size: 0.65rem; color: var(--c-dim); 
+                letter-spacing: 1px; margin-bottom: 2px; 
+            }
+            .hud-value { 
+                font-size: 2.2rem; font-weight: 700; line-height: 1; 
+                text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            }
+            
+            /* Center Combo Area */
+            .hud-center-wrapper {
+                position: relative;
+                width: 80px; height: 80px;
+                display: flex; justify-content: center; align-items: center;
+            }
+            
+            .clan-emblem-bg {
+                position: absolute;
+                font-size: 3rem;
+                color: var(--theme-color);
+                opacity: 0.15; /* Làm mờ để làm nền */
+                filter: blur(1px);
+                z-index: 0;
+            }
+
+            /* Combo Ring Animation */
+            .combo-ring {
+                position: relative; z-index: 1;
+                width: 60px; height: 60px;
+                display: flex; justify-content: center; align-items: center;
+                border-radius: 50%;
+                background: rgba(0,0,0,0.4);
+                box-shadow: 0 0 15px var(--theme-sub);
+                border: 2px solid var(--theme-color);
+                opacity: 0; transition: 0.3s; /* Mặc định ẩn */
+                transform: scale(0.8);
+            }
+            .combo-ring.active { opacity: 1; transform: scale(1); animation: pulseGlow 1s infinite; }
+            
+            .combo-inner { text-align: center; line-height: 1; }
+            .combo-label { font-family: var(--font-tech); font-size: 0.5rem; color: var(--c-warning); display: block; }
+            .combo-num { font-family: var(--font-tech); font-size: 1.2rem; font-weight: bold; color: #fff; }
+
+            /* 2. QUESTION CARD (THẺ CÂU HỎI) */
+            .question-card {
+                margin-bottom: 25px;
+                min-height: 150px;
+                display: flex; flex-direction: column;
+                border: 1px solid rgba(var(--theme-color), 0.3); /* Viền màu theo tộc */
+            }
+            .q-header {
+                display: flex; justify-content: space-between; align-items: center;
+                margin-bottom: 15px; 
+                border-bottom: 1px dashed rgba(255,255,255,0.1);
+                padding-bottom: 10px;
+            }
+            .q-scan-bar {
+                width: 60px; height: 3px; background: var(--theme-color);
+                box-shadow: 0 0 10px var(--theme-color);
+                animation: scanBar 2s infinite alternate;
+            }
+            .q-content { 
+                font-size: 1.3rem; font-weight: 600; line-height: 1.5; 
+                text-shadow: 0 2px 4px black; 
+                flex: 1; display: flex; align-items: center;
+            }
+
+            @keyframes scanBar { 0% { opacity: 0.3; width: 20px; } 100% { opacity: 1; width: 60px; } }
+
+            /* Góc trang trí (Corner Decorations) */
+            .corner-deco { position: absolute; width: 10px; height: 10px; border: 2px solid var(--theme-color); transition: 0.3s; }
+            .tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+            .tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+            .bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+            .br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+            
+            .question-card:hover .corner-deco { width: 100%; height: 100%; opacity: 0.1; } /* Hiệu ứng full viền khi hover */
+
+            /* 3. OPTIONS GRID (NÚT TRẢ LỜI) */
+            .options-grid {
+                display: grid; gap: 12px;
+                margin-bottom: 20px;
+            }
+            .opt-btn {
+                position: relative;
+                background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 16px 20px;
+                text-align: left;
+                color: var(--c-white); 
+                font-family: var(--font-read); font-size: 1rem;
+                border-radius: 8px; cursor: pointer;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                display: flex; align-items: center;
+                overflow: hidden;
+            }
+            .opt-label {
+                font-family: var(--font-tech); font-weight: bold; font-size: 1.2rem;
+                color: var(--theme-color); margin-right: 15px;
+                min-width: 25px; 
+                text-shadow: 0 0 5px var(--theme-color);
+            }
+            
+            /* Hover Effect */
+            .opt-btn:hover {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: var(--theme-color);
+                transform: translateX(8px); /* Trượt sang phải */
+                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+            }
+            
+            /* Trạng thái Đúng/Sai (JS sẽ thêm class này) */
+            .opt-btn.correct {
+                background: rgba(0, 255, 170, 0.25) !important;
+                border-color: var(--c-success) !important;
+                box-shadow: 0 0 25px rgba(0, 255, 170, 0.4);
+                color: #fff;
+                transform: scale(1.02);
+            }
+            .opt-btn.wrong {
+                background: rgba(255, 51, 68, 0.25) !important;
+                border-color: var(--c-danger) !important;
+                opacity: 0.6;
+                transform: scale(0.98);
+            }
+            .opt-btn.disabled { pointer-events: none; filter: grayscale(1); opacity: 0.5; }
+
+            /* 4. ABILITIES DOCK (NĂNG LỰC) */
+            .abilities-container {
+                margin-top: auto; /* Đẩy xuống đáy */
+                background: rgba(0, 5, 10, 0.6);
+                border-top: 1px solid rgba(255,255,255,0.1);
+                padding: 15px 10px;
+                margin-left: -20px; margin-right: -20px; margin-bottom: -20px; /* Full width */
+                backdrop-filter: blur(15px);
+                box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+            }
+            .ab-label { 
+                text-align: center; font-size: 0.6rem; color: var(--c-dim); 
+                margin-bottom: 12px; letter-spacing: 3px; 
+            }
+            
+            .ab-bar {
+                display: flex; justify-content: center; gap: 15px;
+            }
+            .ab-slot { 
+                position: relative; cursor: pointer; transition: 0.3s;
+                display: flex; flex-direction: column; align-items: center;
+            }
+            
+            .ab-icon {
+                width: 48px; height: 48px;
+                border-radius: 12px; /* Bo góc vuông nhẹ thay vì tròn */
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.15);
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1.2rem; transition: 0.3s;
+                position: relative; overflow: hidden;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            }
+            
+            .ab-key {
+                font-family: var(--font-tech); font-size: 0.6rem; color: #555; margin-top: 4px;
+            }
+            
+            /* Màu sắc riêng cho từng năng lực */
+            .ab-ikran { color: #00f0ff; }
+            .ab-seed { color: #00ff88; }
+            .ab-tree { color: #a45eff; }
+            .ab-tsahaylu { color: #ffcc00; }
+            .ab-thanator { color: #ff3333; }
+            .ab-eywa { color: #ffffff; }
+
+            /* Hover Effect */
+            .ab-slot:hover .ab-icon { 
+                transform: translateY(-8px) scale(1.1); 
+                border-color: currentColor; 
+                box-shadow: 0 0 20px currentColor; 
+                background: rgba(255,255,255,0.1);
+            }
+            
+            /* Trạng thái đã dùng (Used) */
+            .ab-slot.used .ab-icon {
+                filter: grayscale(1); opacity: 0.2; 
+                cursor: not-allowed; 
+                transform: none !important; box-shadow: none !important; border-color: #333 !important;
+            }
+            .ab-slot.used::after {
+                content: "✖"; position: absolute; top: 10px; font-size: 1.5rem; color: #555;
+            }
+
+            /* Responsive */
+            @media (max-width: 400px) {
+                .ab-icon { width: 38px; height: 38px; font-size: 1rem; }
+                .ab-bar { gap: 8px; }
+                .hud-value { font-size: 1.8rem; }
+            }
+        </style><div id="boss-overlay" class="boss-modal">
+            
+            <div class="boss-bg-flash"></div>
+            
+            <div class="boss-grid-bg"></div>
+
+            <div class="boss-alert-box anim-shake">
+                <div class="alert-header">
+                    <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="glitch-text font-tech" data-text="WARNING: RDA DETECTED">WARNING: RDA DETECTED</div>
+                    <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                </div>
+                
+                <div class="boss-visual-wrapper">
+                    <div class="reticle-ring r1"></div>
+                    <div class="reticle-ring r2"></div>
+                    <div class="reticle-ring r3"></div>
+                    
+                    <div id="boss-img-container" class="boss-img-display bg-cover"></div>
+                    
+                    <div class="boss-scan-line-vertical"></div>
+                    
+                    <div class="target-info font-tech">
+                        TARGET LOCK<br>
+                        <span style="color:var(--c-danger)">HOSTILE</span>
+                    </div>
+                </div>
+
+                <h2 id="boss-name" class="font-tech text-glow" style="font-size: 2rem; color: #fff; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 3px;">
+                    UNKNOWN TARGET
+                </h2>
+                <p id="boss-quote" class="font-body" style="color: #aaa; font-style: italic; font-size: 0.9rem; margin-bottom: 25px; border-bottom: 1px solid rgba(255,50,50,0.3); padding-bottom: 15px; display: inline-block;">
+                    "Analyzing threat level..."
+                </p>
+
+                <div class="stakes-container">
+                    <div class="stake-box win">
+                        <div class="stake-title font-tech">VICTORY REWARD</div>
+                        <div class="stake-desc font-body" id="boss-reward-text">
+                            <i class="fas fa-gift"></i> QUYỀN CHỌN PHẦN THƯỞNG
+                        </div>
+                    </div>
+                    <div class="stake-box lose">
+                        <div class="stake-title font-tech">DEFEAT PENALTY</div>
+                        <div class="stake-desc font-body" id="boss-penalty-text">
+                            <i class="fas fa-heart-broken"></i> MẤT ĐIỂM & NĂNG LỰC
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-action btn-danger anim-pulse" onclick="App.startBossFight()">
+                    <span><i class="fas fa-crosshairs"></i> KHAI HỎA (ENGAGE)</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="modal-boss-reward" class="reward-overlay">
+            <div class="reward-container anim-slide-up">
+                
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 10px; animation: float 3s infinite;">🏆</div>
+                    <h2 class="font-art text-gradient" style="font-size: 2.5rem; margin: 0; color: var(--c-warning);">
+                        CHIẾN THẮNG
+                    </h2>
+                    <p class="font-body" style="color: #ddd; margin-top: 5px;">
+                        Eywa ban tặng cho bạn một quyền năng. Hãy lựa chọn khôn ngoan:
+                    </p>
+                </div>
+                
+                <div class="reward-grid">
+                    
+                    <div class="reward-card" onclick="App.selectReward('ikran')">
+                        <div class="reward-glow"></div>
+                        <div class="reward-icon" style="color: #00f0ff; border-color: #00f0ff;">
+                            <i class="fas fa-feather-alt"></i>
+                        </div>
+                        <div class="reward-content">
+                            <div class="reward-title font-tech">HỒI PHỤC IKRAN</div>
+                            <div class="reward-desc font-body">Lấy lại quyền Bỏ qua câu hỏi.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="reward-card" onclick="App.selectReward('tsahaylu')">
+                        <div class="reward-glow"></div>
+                        <div class="reward-icon" style="color: #ffcc00; border-color: #ffcc00;">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <div class="reward-content">
+                            <div class="reward-title font-tech">HỒI PHỤC GIAO CẢM</div>
+                            <div class="reward-desc font-body">Lấy lại quyền Nhân đôi điểm số.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="reward-card" onclick="App.selectReward('score')">
+                        <div class="reward-glow"></div>
+                        <div class="reward-icon" style="color: #00ff88; border-color: #00ff88;">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="reward-content">
+                            <div class="reward-title font-tech">CỘNG ĐIỂM NGAY</div>
+                            <div class="reward-desc font-body">Nhận ngay <span style="color:#fff; font-weight:bold;">+500</span> điểm danh vọng.</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <style>
+            /* --- 1. BOSS MODAL STYLES --- */
+            .boss-modal {
+                position: absolute; inset: 0; z-index: var(--z-modal);
+                display: none; /* Mặc định ẩn */
+                flex-direction: column; justify-content: center; align-items: center;
+                background: rgba(10, 0, 0, 0.9);
+                backdrop-filter: blur(10px);
+                overflow: hidden;
+            }
+
+            /* Hiệu ứng nền chớp đỏ */
+            .boss-bg-flash {
+                position: absolute; inset: 0;
+                background: radial-gradient(circle, rgba(255,0,0,0.2) 0%, transparent 70%);
+                animation: flashRed 1s infinite alternate;
+                z-index: 0;
+            }
+            @keyframes flashRed { from { opacity: 0.3; } to { opacity: 0.8; } }
+
+            .boss-grid-bg {
+                position: absolute; inset: 0;
+                background-image: linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+                                  linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+                background-size: 50px 50px;
+                z-index: 0;
+            }
+
+            .boss-alert-box {
+                position: relative; z-index: 10;
+                width: 95%; max-width: 550px;
+                background: rgba(20, 5, 5, 0.95);
+                border: 2px solid var(--c-danger);
+                border-radius: 4px;
+                padding: 30px;
+                text-align: center;
+                box-shadow: 0 0 100px rgba(255, 0, 0, 0.4);
+                /* Hình dáng cắt góc kiểu quân sự */
+                clip-path: polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px);
+            }
+
+            .alert-header {
+                display: flex; justify-content: center; align-items: center; gap: 15px;
+                color: var(--c-danger); font-size: 1.5rem; font-weight: 900;
+                border-bottom: 2px solid var(--c-danger);
+                padding-bottom: 15px; margin-bottom: 20px;
+                letter-spacing: 2px;
+            }
+            .alert-icon { animation: blink 0.3s infinite; }
+
+            /* Radar Visual Wrapper */
+            .boss-visual-wrapper {
+                position: relative;
+                width: 160px; height: 160px;
+                margin: 0 auto 20px auto;
+                display: flex; justify-content: center; align-items: center;
+            }
+
+            .boss-img-display {
+                width: 140px; height: 140px;
+                border-radius: 50%;
+                border: 3px solid var(--c-danger);
+                position: relative; z-index: 2;
+                box-shadow: 0 0 20px var(--c-danger);
+                filter: sepia(0.5) contrast(1.2) hue-rotate(-50deg); /* Hiệu ứng camera nhiệt */
+            }
+
+            /* Các vòng tròn Radar xoay */
+            .reticle-ring {
+                position: absolute; border-radius: 50%;
+                border: 1px dashed rgba(255, 50, 50, 0.5);
+                z-index: 1;
+            }
+            .r1 { width: 160px; height: 160px; animation: spin 10s linear infinite; }
+            .r2 { width: 130px; height: 130px; animation: spin 5s linear infinite reverse; border-style: solid; border-width: 1px; border-color: rgba(255,0,0,0.3); }
+            .r3 { width: 180px; height: 180px; border: 2px solid var(--c-danger); clip-path: polygon(0 0, 100% 0, 100% 20%, 0 20%); animation: spin 3s linear infinite; opacity: 0.5; }
+
+            .boss-scan-line-vertical {
+                position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+                background: var(--c-danger);
+                box-shadow: 0 0 10px var(--c-danger);
+                animation: scanVertical 1.5s linear infinite;
+                z-index: 5; opacity: 0.8;
+            }
+            @keyframes scanVertical { 0% { top:0; } 100% { top:100%; } }
+
+            .target-info {
+                position: absolute; bottom: 5px; right: -40px;
+                background: var(--c-danger); color: #000;
+                padding: 2px 5px; font-size: 0.6rem; font-weight: bold;
+                transform: rotate(-10deg);
+            }
+
+            /* Stakes Box */
+            .stakes-container {
+                display: flex; gap: 15px; margin-bottom: 30px;
+            }
+            .stake-box {
+                flex: 1; padding: 15px;
+                background: rgba(0,0,0,0.6);
+                border-radius: 4px;
+                border: 1px solid rgba(255,255,255,0.1);
+                transition: 0.3s;
+            }
+            .stake-title { font-size: 0.75rem; font-weight: bold; margin-bottom: 8px; opacity: 0.8; }
+            .stake-desc { font-size: 0.85rem; line-height: 1.3; font-weight: 600; }
+            
+            .stake-box.win { border-top: 3px solid var(--c-success); color: var(--c-success); }
+            .stake-box.lose { border-top: 3px solid var(--c-danger); color: var(--c-danger); }
+
+            /* --- 2. REWARD MODAL STYLES --- */
+            .reward-overlay {
+                position: absolute; inset: 0; z-index: 2000; /* Cao hơn cả Boss */
+                display: none; /* Ẩn mặc định */
+                justify-content: center; align-items: center;
+                background: rgba(0, 5, 10, 0.95);
+                backdrop-filter: blur(15px);
+            }
+
+            .reward-container {
+                width: 95%; max-width: 900px;
+                padding: 20px;
+            }
+
+            .reward-grid {
+                display: flex; gap: 20px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .reward-card {
+                flex: 1; min-width: 200px; max-width: 250px;
+                background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+                border: 1px solid rgba(255,255,255,0.15);
+                border-radius: 16px;
+                padding: 25px 20px;
+                text-align: center;
+                cursor: pointer;
+                position: relative;
+                overflow: hidden;
+                transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            }
+
+            .reward-icon {
+                width: 70px; height: 70px;
+                border-radius: 50%;
+                border: 2px solid #fff;
+                display: flex; justify-content: center; align-items: center;
+                font-size: 2rem;
+                margin: 0 auto 20px auto;
+                background: rgba(0,0,0,0.3);
+                box-shadow: 0 0 20px rgba(0,0,0,0.5);
+                transition: 0.3s;
+            }
+
+            .reward-title { font-size: 1rem; font-weight: bold; margin-bottom: 5px; color: #fff; }
+            .reward-desc { font-size: 0.8rem; color: #aaa; }
+
+            /* Hiệu ứng Hover cho thẻ quà */
+            .reward-card:hover {
+                transform: translateY(-10px) scale(1.05);
+                border-color: var(--c-warning);
+                background: rgba(255, 204, 0, 0.05);
+                box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            }
+            .reward-card:hover .reward-icon {
+                transform: scale(1.2);
+                box-shadow: 0 0 30px currentColor;
+                background: #000;
+            }
+
+            /* Responsive */
+            @media (max-width: 700px) {
+                .stakes-container { flex-direction: column; gap: 10px; }
+                .reward-grid { flex-direction: column; align-items: center; }
+                .reward-card { width: 100%; max-width: 300px; display: flex; align-items: center; gap: 15px; padding: 15px; text-align: left; }
+                .reward-icon { margin: 0; width: 50px; height: 50px; font-size: 1.2rem; flex-shrink: 0; }
+            }
+        </style><div id="sc-result" class="screen">
+            
+            <div style="text-align: center; margin-top: 20px; margin-bottom: 30px;">
+                <h1 class="font-art text-gradient" style="font-size: 2.5rem; margin-bottom: 5px;">
+                    NHIỆM VỤ HOÀN TẤT
+                </h1>
+                <div style="display: flex; justify-content: center; align-items: center; gap: 10px; opacity: 0.7;">
+                    <div style="width: 50px; height: 1px; background: var(--theme-color);"></div>
+                    <span class="font-tech" style="font-size: 0.8rem; color: #fff;">SESSION ENDED</span>
+                    <div style="width: 50px; height: 1px; background: var(--theme-color);"></div>
+                </div>
+            </div>
+
+            <div class="result-score-box anim-slide-up" style="animation-delay: 0.1s;">
+                <div class="font-tech" style="color: var(--c-dim); letter-spacing: 2px; font-size: 0.8rem; margin-bottom: 5px;">
+                    TỔNG ĐIỂM DANH VỌNG
+                </div>
+                <div id="final-score" class="font-tech" style="font-size: 5rem; font-weight: 900; line-height: 1; color: var(--theme-color); text-shadow: 0 0 40px var(--theme-color);">
+                    0
+                </div>
+                
+                <div id="result-stats" style="display: flex; justify-content: center; gap: 20px; margin-top: 15px; font-size: 0.9rem; color: #aaa;">
+                    <span><i class="fas fa-check-circle" style="color: var(--c-success)"></i> Đúng: <b id="res-correct" style="color:#fff">0</b></span>
+                    <span><i class="fas fa-fire" style="color: var(--c-warning)"></i> Max Combo: <b id="res-combo" style="color:#fff">0</b></span>
+                </div>
+            </div>
+
+            <div id="winner-box" class="winner-container anim-slide-up" style="display:none; animation-delay: 0.3s;">
+                <div class="winner-glow"></div> <div style="position: relative; z-index: 2;">
+                    <div style="font-size: 3.5rem; margin-bottom: 10px; filter: drop-shadow(0 0 10px #ffd700);">👑</div>
+                    <h3 class="font-tech" style="color: #ffd700; font-size: 1.5rem; letter-spacing: 3px; margin: 0;">
+                        TORUK MAKTO
+                    </h3>
+                    <p class="font-body" style="font-size: 0.9rem; color: #fff; margin-top: 5px;">
+                        Eywa đã chọn bạn để dẫn dắt bộ tộc.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card-glass anim-slide-up" style="flex: 1; margin-bottom: 20px; display: flex; flex-direction: column; animation-delay: 0.4s;">
+                
+                <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <span class="font-tech" style="color: var(--theme-color); font-size: 1.1rem;">
+                        <i class="fas fa-list-ol"></i> BẢNG XẾP HẠNG
+                    </span>
+                    <span class="font-body" style="font-size: 0.7rem; color: var(--c-dim);">Live Sync <i class="fas fa-circle" style="color:var(--c-success); font-size: 6px; vertical-align: middle;"></i></span>
+                </div>
+                
+                <div id="lb-list" class="lb-scroll-area">
+                    <div style="text-align: center; color: var(--c-dim); font-style: italic; padding: 30px;">
+                        <div class="loader-ring" style="width: 30px; height: 30px; border-width: 2px;"></div>
+                        <div style="margin-top: 10px;">Đang đồng bộ dữ liệu từ Cây Linh Hồn...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="btn-action" onclick="location.reload()">
+                    <span>TRỞ VỀ HOME TREE</span>
+                </button>
+            </div>
+
+        </div>
+
+        <style>
+            /* Score Box */
+            .result-score-box {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            }
+
+            /* Winner Box (Hộp vinh danh Top 1) */
+            .winner-container {
+                position: relative;
+                text-align: center;
+                padding: 25px;
+                border: 1px solid #ffd700;
+                background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(0,0,0,0.5));
+                border-radius: 12px;
+                margin-bottom: 30px;
+                overflow: hidden;
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+            }
+            
+            /* Hiệu ứng hào quang xoay nền */
+            .winner-glow {
+                position: absolute; top: -100%; left: -50%; width: 200%; height: 300%;
+                background: conic-gradient(from 0deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+                animation: rotateGlow 6s linear infinite;
+            }
+            @keyframes rotateGlow { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+            /* Leaderboard Scroll Area */
+            .lb-scroll-area {
+                flex: 1;
+                overflow-y: auto;
+                padding-right: 5px;
+                max-height: 300px;
+                min-height: 150px;
+            }
+            .lb-scroll-area::-webkit-scrollbar { width: 4px; }
+            .lb-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+            /* Style cho từng dòng xếp hạng (Item) */
+            .lb-item {
+                display: flex; justify-content: space-between; align-items: center;
+                padding: 15px 20px;
+                margin-bottom: 10px;
+                background: rgba(255,255,255,0.03);
+                border: 1px solid rgba(255,255,255,0.05);
+                border-radius: 8px;
+                transition: 0.2s;
+            }
+            
+            /* Màu sắc cho Top 3 */
+            .lb-item.rank-1 { 
+                border-color: #ffd700; 
+                background: linear-gradient(90deg, rgba(255,215,0,0.15), transparent); 
+                box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+            }
+            .lb-item.rank-2 { 
+                border-color: #c0c0c0; 
+                background: linear-gradient(90deg, rgba(192,192,192,0.15), transparent); 
+            }
+            .lb-item.rank-3 { 
+                border-color: #cd7f32; 
+                background: linear-gradient(90deg, rgba(205,127,50,0.15), transparent); 
+            }
+            
+            .lb-item:hover { background: rgba(255,255,255,0.08); }
+
+            /* Thông tin bên trong dòng xếp hạng */
+            .lb-rank { 
+                font-family: var(--font-tech); 
+                font-weight: 900; font-size: 1.1rem; 
+                width: 40px; color: var(--c-dim); 
+            }
+            .lb-item.rank-1 .lb-rank { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
+            .lb-item.rank-2 .lb-rank { color: #c0c0c0; }
+            .lb-item.rank-3 .lb-rank { color: #cd7f32; }
+
+            .lb-info { display: flex; flex-direction: column; }
+            .lb-name { font-weight: 700; color: #fff; font-size: 1rem; }
+            .lb-clan { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+            
+            .lb-score { 
+                font-family: var(--font-tech); 
+                color: var(--theme-color); 
+                font-weight: 700; font-size: 1.2rem; 
+            }
+        </style><div id="sc-admin" class="screen">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--theme-sub); padding-bottom: 15px;">
+                <div>
+                    <h2 class="font-tech text-glow" style="color: var(--theme-sub); font-size: 1.8rem; margin: 0;">
+                        MẠNG LƯỚI EYWA
+                    </h2>
+                    <span class="font-body" style="font-size: 0.7rem; color: #888;">SYSTEM STATUS: <span style="color: var(--c-success);">ONLINE</span></span>
+                </div>
+                
+                <button class="btn-secondary" onclick="location.reload()" style="border: 1px solid #444;">
+                    <i class="fas fa-power-off"></i> THOÁT
+                </button>
+            </div>
+
+            <div id="admin-visual-map" class="admin-map-container">
+                <div class="map-grid-overlay"></div>
+                <div class="map-scan-line"></div>
+                <div class="map-center-text font-tech">LIVE MONITOR</div>
+                </div>
+
+            <div class="card-glass" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+                
+                <div class="admin-toolbar">
+                    <div style="display: flex; gap: 30px;">
+                        <div class="stat-item">
+                            <span class="stat-label">KẾT NỐI</span>
+                            <span class="stat-val" id="adm-count-online" style="color: var(--c-info);">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">HOÀN THÀNH</span>
+                            <span class="stat-val" id="adm-count-finish" style="color: var(--c-success);">0</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-secondary" onclick="App.adminAction('start')" style="border-color: var(--c-success); color: var(--c-success);">
+                            <i class="fas fa-play"></i> BẮT ĐẦU GAME
+                        </button>
+                        <button class="btn-secondary" onclick="App.adminAction('reset')" style="border-color: var(--c-danger); color: var(--c-danger);">
+                            <i class="fas fa-trash-alt"></i> RESET DATA
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-table-scroll">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th width="50">#</th>
+                                <th width="150">CHIẾN BINH</th>
+                                <th>LỊCH SỬ ĐẤU (30 CÂU)</th>
+                                <th width="80" style="text-align: right;">ĐIỂM</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adm-table-body">
+                            <tr>
+                                <td colspan="4" style="text-align:center; padding: 30px; color: #666; font-style: italic;">
+                                    Đang chờ kết nối từ Cây Linh Hồn...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="matrix-legend">
+                    <div class="legend-item"><span class="dot-sample c"></span> Đúng</div>
+                    <div class="legend-item"><span class="dot-sample w"></span> Sai</div>
+                    <div class="legend-item"><span class="dot-sample b"></span> Boss</div>
+                    <div class="legend-item"><span class="dot-sample n"></span> Chưa tới</div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <style>
+            /* 1. Visual Map Style (Radar) */
+            .admin-map-container {
+                width: 100%; height: 220px;
+                background: radial-gradient(circle at center, #1a0b2e 0%, #000 100%);
+                border: 1px solid var(--theme-sub);
+                border-radius: 12px;
+                position: relative; overflow: hidden;
+                box-shadow: inset 0 0 30px rgba(100, 0, 255, 0.1);
+                margin-bottom: 20px;
+            }
+            
+            /* Lưới tọa độ */
+            .map-grid-overlay {
+                position: absolute; inset: 0;
+                background-image: 
+                    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+                background-size: 40px 40px;
+                opacity: 0.5;
+            }
+            
+            /* Chữ nền chìm */
+            .map-center-text {
+                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                font-size: 3rem; color: rgba(255,255,255,0.02); pointer-events: none;
+                white-space: nowrap;
+            }
+            
+            /* User Node trên bản đồ (Các chấm sáng di chuyển) */
+            .map-node {
+                position: absolute; width: 8px; height: 8px; border-radius: 50%;
+                background: #fff; box-shadow: 0 0 10px #fff;
+                transition: top 2s cubic-bezier(0.4, 0, 0.2, 1), left 2s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            /* 2. Admin Panel Styles */
+            .admin-toolbar {
+                display: flex; justify-content: space-between; align-items: center;
+                padding: 15px 20px;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                background: rgba(0,0,0,0.2);
+            }
+            .stat-item { display: flex; flex-direction: column; }
+            .stat-label { font-size: 0.6rem; color: #888; font-family: var(--font-tech); letter-spacing: 1px; }
+            .stat-val { font-size: 1.8rem; font-family: var(--font-tech); font-weight: bold; line-height: 1; }
+
+            /* Table Styles */
+            .admin-table-scroll { flex: 1; overflow-y: auto; padding-right: 5px; }
+            .admin-table { width: 100%; border-collapse: collapse; font-family: var(--font-body); }
+            
+            .admin-table th {
+                text-align: left; font-size: 0.7rem; color: var(--theme-sub);
+                padding: 12px 15px; border-bottom: 1px solid #444;
+                position: sticky; top: 0; background: rgba(10, 15, 20, 0.95); z-index: 2;
+                font-family: var(--font-tech); letter-spacing: 1px;
+            }
+            .admin-table td {
+                padding: 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; vertical-align: middle;
+            }
+            /* Hiệu ứng Zebra (sọc xen kẽ) cho bảng */
+            .admin-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+            .admin-table tr:hover { background: rgba(255,255,255,0.05); }
+
+            /* Matrix Dots (Chấm điểm lịch sử) */
+            .matrix-row { display: flex; gap: 4px; flex-wrap: wrap; }
+            .m-dot {
+                width: 6px; height: 6px; border-radius: 50%; background: #333; transition: 0.3s;
+            }
+            .m-dot.c { background: var(--c-success); box-shadow: 0 0 5px var(--c-success); } /* Correct */
+            .m-dot.w { background: var(--c-danger); opacity: 0.5; } /* Wrong */
+            .m-dot.b { background: var(--c-warning); border-radius: 0; transform: scale(1.2); } /* Boss Win */
+            
+            .matrix-legend {
+                display: flex; gap: 15px; padding: 10px 20px;
+                border-top: 1px solid rgba(255,255,255,0.1);
+                font-size: 0.7rem; color: #888; justify-content: flex-end;
+                background: rgba(0,0,0,0.2);
+            }
+            .legend-item { display: flex; align-items: center; gap: 5px; }
+            .dot-sample { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+            .dot-sample.c { background: var(--c-success); }
+            .dot-sample.w { background: var(--c-danger); }
+            .dot-sample.b { background: var(--c-warning); border-radius: 0; }
+            .dot-sample.n { background: #333; }
+
+            /* Mobile Responsive */
+            @media (max-width: 768px) {
+                .admin-toolbar { flex-direction: column; align-items: flex-start; gap: 15px; }
+                .admin-map-container { height: 150px; }
+            }
+        </style></div> <script>
+        /**
+         * 1. HỆ THỐNG ÂM THANH (AUDIO SYSTEM)
+         * Quản lý phát nhạc nền và hiệu ứng âm thanh (SFX).
+         */
+        const AudioSys = {
+            currentBGM: null,
+
+            // Phát nhạc nền (Loop)
+            playBGM(id) {
+                if (this.currentBGM && this.currentBGM !== id) {
+                    this.stop(this.currentBGM);
+                }
+                const el = document.getElementById(id);
+                if (el) {
+                    el.volume = 0.5; // Giảm âm lượng nhạc nền
+                    el.play().catch(() => console.log("User gesture needed for audio"));
+                    this.currentBGM = id;
+                }
+            },
+
+            // Dừng nhạc
+            stop(id) {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.pause();
+                    el.currentTime = 0;
+                }
+            },
+
+            // Hiệu ứng âm thanh (SFX) - Sử dụng Web Audio API để tạo tiếng động điện tử
+            sfx(type) {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+
+                if (type === 'click') { // Tiếng click công nghệ
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(800, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    osc.start();
+                    osc.stop(now + 0.05);
+                } 
+                else if (type === 'correct') { // Ting ting (Đúng)
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.linearRampToValueAtTime(1200, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                    osc.start();
+                    osc.stop(now + 0.3);
+                } 
+                else if (type === 'wrong') { // Buzz (Sai)
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                    osc.start();
+                    osc.stop(now + 0.3);
+                }
+                else if (type === 'boss') { // Còi báo động Boss
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.linearRampToValueAtTime(880, now + 0.5);
+                    gain.gain.setValueAtTime(0.1, now);
+                    osc.start();
+                    osc.stop(now + 0.5);
+                }
+            }
+        };
+
+        /**
+         * 2. NGÂN HÀNG CÂU HỎI (DATA MATRIX)
+         * 30 Câu hỏi chia làm 3 giai đoạn (Level 1-9, 11-19, 21-29) + 3 Boss (10, 20, 30).
+         */
+const QUESTION_BANK = [
+            // --- GIAI ĐOẠN 1: EASY (LEVEL 1-9) ---
+            { q: 'What is Tourism Marketing primarily about?', o: ['Predicting tourist needs & creating value', 'Only selling tickets and running ads', 'Building hotels and roads', 'Organizing events only'], a: 0 },
+            { q: 'How many "P"s are there in the extended Marketing Mix for tourism?', o: ['4P', '5P', '7P', '8P'], a: 2 },
+            { q: 'What does "Product" mean in tourism\'s 7P?', o: ['The price of the tour', 'Advertising campaigns', 'The physical hotel room', 'The overall tourist experience'], a: 3 },
+            { q: 'What is the main role of "People" in tourism 7P?', o: ['Digital ads', 'Local hospitality and service staff', 'The price strategy', 'Physical facilities'], a: 1 },
+            { q: 'Destination Branding is mainly about creating:', o: ['Cheap tours', 'A unique identity & emotional connection', 'More hotels', 'Only a logo'], a: 1 },
+            { q: 'What does USP stand for?', o: ['Universal Service Plan', 'Unique Selling Proposition', 'United Sales Promotion', 'User Satisfaction Point'], a: 1 },
+            { q: 'One of Hà Giang\'s 4 USP pillars is:', o: ['Fast food chains', 'Nightclubs', 'Pristine Nature', 'Luxury shopping malls'], a: 2 },
+            { q: 'Promotion Mix includes:', o: ['Only building roads', 'Advertising, PR, Digital, Sales Promotion', 'Only pricing', 'Only advertising'], a: 1 },
+            { q: 'What is FOMO in tourism context?', o: ['Focus On Money Only', 'Fear Of Marketing Online', 'Full Of Marketing Options', 'Fear Of Missing Out'], a: 3 },
+
+            // BOSS 1: LEVEL 10 (HARD)
+            { q: '[BOSS] Why is the Promotion Mix proposed as 70-20-10 for Hà Giang (Gen Z)?', o: ['Equal split for all channels', 'To focus only on TV ads', '70% Digital (natives); 20% PR (trust); 10% Sales', 'Because traditional advertising is cheapest'], a: 2 },
+
+            // --- GIAI ĐOẠN 2: MEDIUM (LEVEL 11-19) ---
+            { q: 'In the Evolution of Hà Giang, what is the "Present" stage called?', o: ['Forgotten Place', 'Hidden Gem', 'Sustainable Icon', 'Emerging Star'], a: 3 },
+            { q: 'Sustainable Branding for Hà Giang is suggested as:', o: ['Cheap Frontier', 'Luxury Frontier', 'Green Frontier', 'Digital Frontier'], a: 2 },
+            { q: 'What is the main difference between Advertising and PR?', o: ['Both are the same', 'PR is only for events', 'Ads = Paid (control); PR = Earned (trust)', 'Advertising is free, PR is paid'], a: 2 },
+            { q: 'UGC stands for:', o: ['Urgent Guest Call', 'User Generated Content', 'Unique Guest Campaign', 'Universal Guide Book'], a: 1 },
+            { q: 'One key benefit of UGC is:', o: ['It reduces social media use', 'It requires professional photographers', 'It costs a lot of money', 'Builds trust & turns tourists into marketers'], a: 3 },
+            { q: 'In the 3 Digital Triggers for FOMO, "Urgency" is created by:', o: ['Long-term discounts', 'No time limit deals', 'Limited-time offers and flash sales', 'Viral videos only'], a: 2 },
+            { q: 'What does "Physical Evidence" in 7P refer to?', o: ['Only pricing', 'Digital ads', 'Tangible elements (homestays, signs)', 'Invisible services'], a: 2 },
+            { q: 'Brand Positioning means:', o: ['Physical location only', 'Selling products', 'Defining perception vs competitors', 'Placing ads everywhere'], a: 2 },
+            { q: 'According to UNWTO, strong branding can lead to:', o: ['Decrease in tourists', 'No change', '50% growth', '15-20% annual tourism growth'], a: 3 },
+
+            // BOSS 2: LEVEL 20 (VERY HARD)
+            { q: '[BOSS] Why is Sustainable Branding ("Green Frontier") proposed for Hà Giang?', o: ['To reduce all tourism', 'To focus only on digital ads', 'To attract only luxury tourists', 'Integrate eco-commitment to attract Gen Z & build trust'], a: 3 },
+
+            // --- GIAI ĐOẠN 3: MEDIUM-HARD / VIETNAMESE (LEVEL 21-29) ---
+            { q: 'The suggested Branding Process has how many steps?', o: ['7', '3', '5', '4'], a: 2 },
+            { q: '"Destination Branding" trong du lịch nghĩa là gì?', o: ['Chỉ bán tour giá rẻ', 'Xây khách sạn', 'Chỉ thiết kế logo', 'Xây dựng bản sắc & kết nối cảm xúc'], a: 3 },
+            { q: 'USP của Hà Giang bao gồm mấy trụ cột chính?', o: ['7', '5', '3', '4'], a: 3 },
+            { q: 'Trong 7P của Tourism Marketing, "People" đề cập đến:', o: ['Quảng cáo', 'Đường sá', 'Sự hiếu khách của người dân địa phương', 'Giá cả'], a: 2 },
+            { q: 'Promotion Mix 70-20-10 ưu tiên kênh nào nhiều nhất?', o: ['Hội chợ', 'Bán hàng trực tiếp', 'Digital Marketing (70%)', 'Quảng cáo truyền thống'], a: 2 },
+            { q: 'FOMO trong du lịch nghĩa là gì?', o: ['Fear Of Marketing Online', 'Full Of Marketing Options', 'Fear Of Missing Out (Sợ bỏ lỡ)', 'Focus On Money Only'], a: 2 },
+            { q: 'UGC giúp gì cho Promotion?', o: ['Chỉ dùng cho quảng cáo trả phí', 'Giảm tương tác mạng xã hội', 'Xây dựng niềm tin & marketing miễn phí', 'Tăng chi phí quảng cáo'], a: 2 },
+            { q: '"Green Frontier" là gợi ý Branding bền vững nhằm:', o: ['Chỉ tập trung quảng cáo', 'Giảm giá tour', 'Bảo vệ môi trường, thu hút Gen Z', 'Thu hút khách đại trà'], a: 2 },
+            { q: 'Theo thuyết trình, Branding bền vững lấy ví dụ thành công từ đâu?', o: ['Pháp', 'Indonesia', 'New Zealand (Tiaki Promise)', 'Thái Lan'], a: 2 },
+
+            // BOSS 3: LEVEL 30 (HARDEST)
+            { q: '[BOSS] Tại sao kết hợp Sustainable Branding (Green Frontier) với Digital Promotion là tối ưu cho Hà Giang?', o: ['Chỉ tập trung quảng cáo truyền thống', 'Giảm hoàn toàn du lịch', 'Chỉ để tăng giá tour', 'Bảo vệ bản sắc, thu hút Gen Z, tạo Trust qua UGC & quản lý khủng hoảng'], a: 3 }
+        ];
+        /**
+         * 3. CƠ SỞ DỮ LIỆU CỤC BỘ (LOCAL STORAGE DATABASE)
+         * Chìa khóa để tạo ra Realtime mà không cần Server.
+         */
+        const DB_KEY = 'pandora_players_v1';  // Kho chứa thông tin người chơi
+        const STATUS_KEY = 'pandora_status_v1'; // Kho chứa trạng thái game (waiting/started)
+
+        const Database = {
+            // Lấy danh sách tất cả người chơi
+            getPlayers() {
+                const data = localStorage.getItem(DB_KEY);
+                return data ? JSON.parse(data) : {};
+            },
+
+            // Lưu/Cập nhật thông tin một người chơi
+            savePlayer(uid, data) {
+                const players = this.getPlayers();
+                players[uid] = data;
+                localStorage.setItem(DB_KEY, JSON.stringify(players));
+            },
+
+            // Admin: Xóa sạch dữ liệu (Reset)
+            resetAll() {
+                localStorage.removeItem(DB_KEY);
+                localStorage.setItem(STATUS_KEY, 'waiting');
+            },
+
+            // Admin: Kích hoạt trạng thái Bắt đầu
+            setGameStart() {
+                localStorage.setItem(STATUS_KEY, 'started');
+            },
+
+            // User: Kiểm tra trạng thái hiện tại
+            getGameStatus() {
+                return localStorage.getItem(STATUS_KEY) || 'waiting';
+            }
+        };
+
+        /**
+         * 4. CORE APPLICATION LOGIC (DATA & SYNC)
+         * Khởi tạo và đồng bộ dữ liệu.
+         */
+        window.App = {
+            // State: Trạng thái của phiên chơi hiện tại
+            state: {
+                uid: 'nav_' + Date.now() + Math.random().toString(36).substr(2, 5), // ID duy nhất
+                name: '', 
+                clan: 'forest', 
+                avatar: '',
+                score: 0, 
+                qIdx: 0, 
+                timer: 20, 
+                combo: 0, // Chuỗi đúng liên tiếp
+                
+                // Trạng thái kỹ năng (1: Sẵn sàng, 0: Đã dùng)
+                abilities: { ikran: 1, seed: 1, tree: 1, tsahaylu: 1, thanator: 1, eywa: 1 },
+                
+                // Lịch sử trả lời (0: Chưa, 1: Đúng, 2: Sai, 3: Boss)
+                history: new Array(30).fill(0),
+                
+                // Cờ điều khiển
+                isBoss: false, 
+                bossStage: 0, 
+                isPaused: false, 
+                isX2: false,
+                
+                // Biến vòng lặp
+                gameInterval: null,
+                syncInterval: null
+            },
+
+            // --- A. KHỞI TẠO ỨNG DỤNG ---
+            init() {
+                console.log("Pandora System Online. UID:", this.state.uid);
+                
+                // Nếu là Admin (đang mở màn hình Admin), tự động chạy vòng lặp quét dữ liệu
+                // Lưu ý: Mặc định vào màn hình Lobby trước.
+                
+                // Lắng nghe sự kiện từ các Tab khác (Realtime Sync)
+                window.addEventListener('storage', (e) => {
+                    // Nếu Admin bấm Start -> User tự vào game
+                    if (e.key === STATUS_KEY && e.newValue === 'started') {
+                        this.remoteStart();
+                    }
+                    // Nếu Admin bấm Reset -> User bị reload
+                    if (e.key === DB_KEY && e.newValue === null) {
+                        location.reload();
+                    }
+                });
+            },
+
+            // --- B. ĐIỀU HƯỚNG MÀN HÌNH (ROUTER) ---
+            switchScreen(id) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                const target = document.getElementById(id);
+                if (target) {
+                    target.classList.add('active');
+                    target.scrollTop = 0; // Reset cuộn
+                }
+            },
+
+            // --- C. CHỌN TỘC (CLAN SELECTION) ---
+            selectClan(el, clan) {
+                // UI: Xóa active cũ, thêm active mới
+                document.querySelectorAll('.clan-card').forEach(c => c.classList.remove('selected'));
+                el.classList.add('selected');
+                
+                // Logic: Cập nhật state
+                this.state.clan = clan;
+                
+                // Cập nhật Avatar dựa trên class ảnh trong thẻ HTML
+                // Chúng ta sẽ lấy url từ style background hoặc gán cứng theo logic
+                if (clan === 'forest') this.state.avatar = 'neytiri.jpg';
+                if (clan === 'water') this.state.avatar = 'ronal.jpg';
+                if (clan === 'ash') this.state.avatar = 'varang.jpg';
+
+                // Đổi Theme toàn trang
+                document.body.className = 'theme-' + clan;
+                
+                AudioSys.sfx('click');
+            },
+
+            // --- D. ĐĂNG KÝ & VÀO PHÒNG CHỜ ---
+            preRegister() {
+                const nameInp = document.getElementById('username');
+                const name = nameInp.value.trim();
+                
+                if (!name) {
+                    alert("Vui lòng nhập tên Chiến Binh!");
+                    nameInp.focus();
+                    return;
+                }
+                
+                this.state.name = name;
+                AudioSys.sfx('click');
+                
+                // Chuyển sang màn hình Luật chơi
+                this.switchScreen('sc-rules');
+            },
+
+            // --- E. QUAY LẠI LOBBY ---
+            backToLobby() {
+                AudioSys.sfx('click');
+                this.switchScreen('sc-lobby');
+            },
+
+            // --- F. XÁC NHẬN SẴN SÀNG (READY) ---
+            confirmRules() {
+                // Điền thông tin vào thẻ ID ở phòng chờ
+                document.getElementById('wait-name').innerText = this.state.name;
+                document.getElementById('wait-clan').innerText = this.state.clan.toUpperCase();
+                document.getElementById('wait-avatar').src = this.state.avatar;
+                
+                // Gửi dữ liệu lên Database (Để Admin thấy)
+                this.syncData(); 
+
+                AudioSys.sfx('click');
+                this.switchScreen('sc-waiting');
+                AudioSys.playBGM('bgm-lobby');
+
+                // BẮT ĐẦU CƠ CHẾ POLLING (CHỜ TÍN HIỆU START)
+                // Kiểm tra mỗi 1 giây xem Admin đã bấm Start chưa
+                if (this.state.syncInterval) clearInterval(this.state.syncInterval);
+                
+                this.state.syncInterval = setInterval(() => {
+                    const status = Database.getGameStatus();
+                    if (status === 'started') {
+                        clearInterval(this.state.syncInterval);
+                        this.startGame(); // Vào game ngay
+                    }
+                }, 1000);
+            },
+
+            // --- G. HÀM ĐỒNG BỘ DỮ LIỆU (SYNC UP) ---
+            syncData() {
+                // Đóng gói dữ liệu người chơi
+                const playerData = {
+                    name: this.state.name,
+                    clan: this.state.clan,
+                    score: this.state.score,
+                    history: this.state.history,
+                    status: 'playing',
+                    combo: this.state.combo, // Gửi cả combo để Admin soi
+                    lastUpdate: Date.now()
+                };
+                
+                // Lưu vào LocalStorage
+                Database.savePlayer(this.state.uid, playerData);
+            },
+
+            // --- H. REMOTE START (KHI ADMIN BẤM NÚT) ---
+            remoteStart() {
+                // Chỉ những ai đang ở màn hình chờ mới được vào game
+                if (document.getElementById('sc-waiting').classList.contains('active')) {
+                    this.startGame();
+                }
+            }
+        };
+
+        // Khởi động ứng dụng khi tải xong trang
+        window.onload = () => App.init();/**
+         * 4. CORE APPLICATION LOGIC (FULL ENGINE)
+         * Bao gồm: Lobby, Gameplay, Boss, Reward, Admin.
+         */
+        window.App = {
+            // --- STATE: TRẠNG THÁI CỦA PHIÊN CHƠI ---
+            state: {
+                uid: 'nav_' + Date.now() + Math.random().toString(36).substr(2, 5),
+                name: '', clan: 'forest', avatar: '',
+                score: 0, qIdx: 0, timer: 20, 
+                combo: 0, // Chuỗi đúng liên tiếp
+                
+                // Trạng thái kỹ năng (1: Có, 0: Hết)
+                abilities: { ikran: 1, seed: 1, tree: 1, tsahaylu: 1, thanator: 1, eywa: 1 },
+                
+                // Lịch sử: 0-Chưa, 1-Đúng, 2-Sai, 3-Boss Win, 4-Boss Lose
+                history: new Array(30).fill(0),
+                
+                // Cờ điều khiển
+                isBoss: false, bossStage: 0, isPaused: false, isX2: false,
+                gameInterval: null, syncInterval: null
+            },
+
+            // --- A. KHỞI TẠO ---
+            init() {
+                console.log("Pandora System Online. UID:", this.state.uid);
+                
+                // Lắng nghe sự kiện Realtime từ Tab khác
+                window.addEventListener('storage', (e) => {
+                    if (e.key === STATUS_KEY && e.newValue === 'started') this.remoteStart();
+                    if (e.key === DB_KEY && e.newValue === null) location.reload();
+                });
+
+                // Nếu đang ở màn hình Admin thì chạy loop ngay
+                if (document.getElementById('sc-admin') && document.getElementById('sc-admin').classList.contains('active')) {
+                    this.adminLoop();
+                }
+            },
+
+            // --- B. ĐIỀU HƯỚNG ---
+            switchScreen(id) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                const target = document.getElementById(id);
+                if (target) {
+                    target.classList.add('active');
+                    target.scrollTop = 0;
+                }
+            },
+
+            // --- C. LOBBY & ĐĂNG KÝ ---
+            selectClan(el, clan) {
+                document.querySelectorAll('.clan-card').forEach(c => c.classList.remove('selected'));
+                el.classList.add('selected');
+                this.state.clan = clan;
+                
+                if (clan === 'forest') this.state.avatar = 'neytiri.jpg';
+                if (clan === 'water') this.state.avatar = 'ronal.jpg';
+                if (clan === 'ash') this.state.avatar = 'varang.jpg';
+
+                document.body.className = 'theme-' + clan;
+                AudioSys.sfx('click');
+            },
+
+            preRegister() {
+                const name = document.getElementById('username').value.trim();
+                if (!name) return alert("Vui lòng nhập tên Chiến Binh!");
+                this.state.name = name;
+                AudioSys.sfx('click');
+                this.switchScreen('sc-rules');
+            },
+
+            backToLobby() {
+                AudioSys.sfx('click');
+                this.switchScreen('sc-lobby');
+            },
+
+            confirmRules() {
+                document.getElementById('wait-name').innerText = this.state.name;
+                document.getElementById('wait-clan').innerText = this.state.clan.toUpperCase();
+                document.getElementById('wait-avatar').src = this.state.avatar;
+                
+                this.syncData(); 
+                AudioSys.sfx('click');
+                this.switchScreen('sc-waiting');
+                AudioSys.playBGM('bgm-lobby');
+
+                // Chờ Admin bấm Start
+                if (this.state.syncInterval) clearInterval(this.state.syncInterval);
+                this.state.syncInterval = setInterval(() => {
+                    if (Database.getGameStatus() === 'started') {
+                        clearInterval(this.state.syncInterval);
+                        this.startGame();
+                    }
+                }, 1000);
+            },
+
+            // --- D. GAME ENGINE (BẮT ĐẦU) ---
+            startGame() {
+                AudioSys.playBGM('bgm-game');
+                this.switchScreen('sc-game');
+                
+                // Cập nhật Icon Tộc ở HUD
+                const icons = { forest: 'fa-tree', water: 'fa-water', ash: 'fa-fire' };
+                document.getElementById('hud-clan-icon').className = 'fas ' + icons[this.state.clan];
+                
+                this.loadQuestion();
+            },
+
+            loadQuestion() {
+                // Kiểm tra kết thúc
+                if (this.state.qIdx >= QUESTION_BANK.length) return this.finishGame();
+
+                // Kiểm tra Boss: Câu 10 (idx 9), 20 (idx 19), 30 (idx 29)
+                if (this.state.qIdx === 9) return this.triggerBoss(1);
+                if (this.state.qIdx === 19) return this.triggerBoss(2);
+                if (this.state.qIdx === 29) return this.triggerBoss(3);
+
+                const q = QUESTION_BANK[this.state.qIdx];
+                
+                // Render UI
+                document.getElementById('q-curr').innerText = this.state.qIdx + 1;
+                document.getElementById('q-text').innerText = q.q;
+                
+                const grid = document.getElementById('options-area');
+                grid.innerHTML = '';
+                
+                q.o.forEach((txt, i) => {
+                    const btn = document.createElement('div');
+                    btn.className = 'opt-btn anim-slide-up';
+                    btn.style.animationDelay = (i * 0.1) + 's';
+                    btn.innerHTML = `<div class="opt-label">${String.fromCharCode(65+i)}</div> ${txt}`;
+                    btn.onclick = () => this.handleAnswer(i, btn);
+                    grid.appendChild(btn);
+                });
+
+                // Reset
+                this.state.timer = 20;
+                this.state.isX2 = false;
+                this.state.isPaused = false;
+                
+                this.startTimer();
+                this.updateAbilityUI();
+            },
+
+            startTimer() {
+                if (this.state.gameInterval) clearInterval(this.state.gameInterval);
+                const tEl = document.getElementById('timer-val');
+                tEl.style.color = '#fff';
+
+                this.state.gameInterval = setInterval(() => {
+                    if (this.state.isPaused) return;
+
+                    this.state.timer--;
+                    tEl.innerText = this.state.timer;
+
+                    if (this.state.timer <= 5) {
+                        tEl.style.color = 'var(--c-danger)';
+                        AudioSys.sfx('click');
+                    }
+                    if (this.state.timer <= 0) {
+                        clearInterval(this.state.gameInterval);
+                        this.handleAnswer(-1, null);
+                    }
+                }, 1000);
+            },
+
+            // --- E. XỬ LÝ TRẢ LỜI & COMBO ---
+            handleAnswer(idx, btnEl) {
+                if (this.state.isPaused && idx !== -1) return;
+                clearInterval(this.state.gameInterval);
+                document.querySelectorAll('.opt-btn').forEach(b => b.style.pointerEvents = 'none');
+
+                const q = QUESTION_BANK[this.state.qIdx];
+                const isCorrect = (idx === q.a);
+                let point = 0;
+
+                // 1. Xử lý Combo
+                if (isCorrect) {
+                    this.state.combo++;
+                    // Hiện Combo Meter nếu > 1
+                    if (this.state.combo > 1) {
+                        document.getElementById('combo-display').classList.add('active');
+                        let mult = this.state.combo >= 5 ? 2.0 : 1.5;
+                        document.getElementById('combo-n').innerText = "x" + mult.toFixed(1);
+                    }
+                } else {
+                    this.state.combo = 0; // Mất chuỗi
+                    document.getElementById('combo-display').classList.remove('active');
+                }
+
+                // 2. Tính điểm
+                if (isCorrect) {
+                    let base = 200;
+                    if (this.state.timer < 10) base -= (10 - this.state.timer) * 10; // Trừ điểm chậm
+                    if (base < 50) base = 50;
+
+                    // Nhân hệ số Combo
+                    let comboMult = 1;
+                    if (this.state.combo >= 5) comboMult = 2.0;
+                    else if (this.state.combo >= 2) comboMult = 1.5;
+
+                    point = Math.round(base * comboMult);
+                }
+
+                // Nhân hệ số Skill/Boss
+                if (this.state.isX2) point *= 2;
+                if (this.state.isBoss) point *= (this.state.bossStage + 1); // Boss thưởng to
+
+                // 3. Cập nhật State & UI
+                if (isCorrect) {
+                    if (btnEl) btnEl.classList.add('correct');
+                    AudioSys.sfx('correct');
+                    this.state.score += point;
+                    this.state.history[this.state.qIdx] = this.state.isBoss ? 3 : 1; // 3 là Boss Win
+
+                    // Nếu thắng Boss -> Hiện bảng chọn quà (Trừ câu 30 là End game luôn)
+                    if (this.state.isBoss && this.state.qIdx < 29) {
+                        setTimeout(() => {
+                            document.getElementById('modal-boss-reward').style.display = 'flex';
+                            AudioSys.sfx('correct'); // Âm thanh chiến thắng
+                        }, 1000);
+                        this.syncData();
+                        return; // DỪNG LẠI ĐỂ CHỌN QUÀ
+                    }
+                } else {
+                    if (btnEl) btnEl.classList.add('wrong');
+                    // Hiện đáp án đúng
+                    const opts = document.querySelectorAll('.opt-btn');
+                    if (opts[q.a]) opts[q.a].classList.add('correct');
+                    
+                    AudioSys.sfx('wrong');
+                    this.state.history[this.state.qIdx] = this.state.isBoss ? 4 : 2; // 4 là Boss Lose
+
+                    // Nếu thua Boss -> Phạt nặng
+                    if (this.state.isBoss) {
+                        let penalty = 1000 * this.state.bossStage;
+                        this.state.score = Math.max(0, this.state.score - penalty);
+                        this.loseAbility(2); // Mất 2 skill ngẫu nhiên
+                        alert(`BOSS DEFEAT! \n- Bạn bị trừ ${penalty} điểm.\n- Hệ thống hỏng hóc: Mất 2 Năng lực.`);
+                    }
+                }
+
+                document.getElementById('score-val').innerText = this.state.score;
+                this.syncData();
+
+                // 4. Chuyển câu tiếp theo (Nếu không phải Boss Win đang chờ chọn quà)
+                setTimeout(() => {
+                    if (this.state.isBoss) {
+                        this.state.isBoss = false;
+                        document.getElementById('boss-overlay').style.display = 'none';
+                        document.body.classList.remove('boss-mode-1', 'boss-mode-final');
+                        AudioSys.playBGM('bgm-game');
+                    }
+                    this.state.qIdx++;
+                    this.loadQuestion();
+                }, 2500);
+            },
+
+            // --- F. BOSS MECHANICS (CƠ CHẾ TRÙM) ---
+            triggerBoss(stage) {
+                this.state.isBoss = true;
+                this.state.bossStage = stage;
+                clearInterval(this.state.gameInterval);
+                
+                AudioSys.stop(AudioSys.currentBGM);
+                AudioSys.playBGM('bgm-boss');
+                AudioSys.sfx('boss');
+
+                // Setup UI
+                const overlay = document.getElementById('boss-overlay');
+                const nameEl = document.getElementById('boss-name');
+                const imgEl = document.getElementById('boss-img-container');
+                
+                // Reset class ảnh cũ
+                imgEl.className = 'boss-img-display bg-cover';
+
+                if (stage === 1) {
+                    nameEl.innerText = "MỤC TIÊU: AMP SUIT";
+                    imgEl.classList.add('img-boss-1'); // Load quaritch.jpg
+                    document.body.classList.add('boss-mode-1');
+                } else if (stage === 2) {
+                    nameEl.innerText = "MỤC TIÊU: GUNSHIP";
+                    imgEl.classList.add('img-boss-2'); // Load quaritch2.jpg
+                    document.body.classList.add('boss-mode-1');
+                } else {
+                    nameEl.innerText = "MỤC TIÊU: TORUK MAKTO";
+                    imgEl.classList.add('img-boss-final'); // Load toruk.jpg
+                    document.body.classList.add('boss-mode-final');
+                }
+
+                overlay.style.display = 'flex';
+            },
+
+            startBossFight() {
+                // Ẩn overlay, hiện câu hỏi bên dưới
+                document.getElementById('boss-overlay').style.display = 'none';
+                
+                // Render lại câu hỏi (vì overlay đã che lúc loadQuestion)
+                const q = QUESTION_BANK[this.state.qIdx];
+                document.getElementById('q-text').innerText = q.q;
+                
+                const grid = document.getElementById('options-area');
+                grid.innerHTML = '';
+                q.o.forEach((txt, i) => {
+                    const btn = document.createElement('div');
+                    btn.className = 'opt-btn anim-slide-up';
+                    btn.innerHTML = `<div class="opt-label">${String.fromCharCode(65+i)}</div> ${txt}`;
+                    btn.onclick = () => this.handleAnswer(i, btn);
+                    grid.appendChild(btn);
+                });
+
+                this.state.timer = 20; // Boss cho 20s
+                this.startTimer();
+            },
+
+            // --- G. REWARD SYSTEM (CHỌN QUÀ SAU BOSS) ---
+            selectReward(type) {
+                if (type === 'ikran') {
+                    this.state.abilities.ikran = 1;
+                    alert("Đã hồi phục quyền trợ giúp IKRAN!");
+                } else if (type === 'tsahaylu') {
+                    this.state.abilities.tsahaylu = 1;
+                    alert("Đã hồi phục quyền trợ giúp GIAO CẢM!");
+                } else if (type === 'score') {
+                    this.state.score += 500;
+                    document.getElementById('score-val').innerText = this.state.score;
+                    alert("Đã cộng thêm 500 điểm danh vọng!");
+                }
+                
+                this.updateAbilityUI();
+                
+                // Tắt modal và tiếp tục
+                document.getElementById('modal-boss-reward').style.display = 'none';
+                this.state.isBoss = false;
+                document.body.classList.remove('boss-mode-1', 'boss-mode-final');
+                AudioSys.playBGM('bgm-game');
+                
+                this.state.qIdx++;
+                this.loadQuestion();
+            },
+
+            // --- H. ABILITY SYSTEM (NĂNG LỰC) ---
+            useAbility(type) {
+                if (this.state.abilities[type] <= 0) return; 
+                if (this.state.isBoss) { alert("Cảnh báo: Tín hiệu bị nhiễu! Không thể dùng năng lực khi đấu Boss."); return; }
+
+                this.state.abilities[type] = 0;
+                this.updateAbilityUI();
+                AudioSys.sfx('click');
+
+                if (type === 'ikran') { // Skip
+                    clearInterval(this.state.gameInterval);
+                    this.state.history[this.state.qIdx] = 1; // Tính là đúng
+                    this.state.score += 100; // Cộng ít điểm hơn bình thường
+                    this.state.qIdx++;
+                    this.loadQuestion();
+                }
+                else if (type === 'seed') { // Freeze
+                    this.state.isPaused = true;
+                    document.getElementById('timer-val').style.color = '#00ffaa';
+                    alert("ĐÓNG BĂNG THỜI GIAN!");
+                }
+                else if (type === 'tsahaylu') { // x2
+                    this.state.isX2 = true;
+                    alert("KÍCH HOẠT GIAO CẢM: Nhân đôi điểm câu này!");
+                }
+                else if (type === 'eywa') { // Show Answer
+                    const q = QUESTION_BANK[this.state.qIdx];
+                    const btns = document.querySelectorAll('.opt-btn');
+                    btns[q.a].style.border = '2px solid #fff';
+                    btns[q.a].style.background = 'rgba(255,255,255,0.2)';
+                }
+                else if (type === 'thanator') { // 50/50
+                    const q = QUESTION_BANK[this.state.qIdx];
+                    const wrongIdxs = [0,1,2,3].filter(x => x !== q.a);
+                    const toHide = wrongIdxs.sort(() => 0.5 - Math.random()).slice(0, 2);
+                    const btns = document.querySelectorAll('.opt-btn');
+                    toHide.forEach(i => {
+                        btns[i].style.opacity = '0.2';
+                        btns[i].style.pointerEvents = 'none';
+                    });
+                }
+                else if (type === 'tree') { // Redo
+                    alert("CÂY LINH HỒN BẢO VỆ: Nếu bạn chọn sai, bạn sẽ được chọn lại 1 lần.");
+                    // Logic xử lý trong handleAnswer (nếu cần phức tạp hơn, tạm thời chỉ thông báo)
+                }
+            },
+
+            updateAbilityUI() {
+                for (let k in this.state.abilities) {
+                    const el = document.querySelector(`.ab-icon.ab-${k}`);
+                    if (el && el.parentElement) {
+                        if (this.state.abilities[k] === 0) el.parentElement.classList.add('used');
+                        else el.parentElement.classList.remove('used');
+                    }
+                }
+            },
+
+            loseAbility(num) {
+                const available = Object.keys(this.state.abilities).filter(k => this.state.abilities[k] > 0);
+                const shuffled = available.sort(() => 0.5 - Math.random());
+                for(let i=0; i < Math.min(num, shuffled.length); i++) {
+                    this.state.abilities[shuffled[i]] = 0;
+                }
+                this.updateAbilityUI();
+            },
+
+            // --- I. KẾT THÚC GAME ---
+            finishGame() {
+                this.switchScreen('sc-result');
+                AudioSys.playBGM('bgm-lobby');
+                
+                // Hiệu ứng pháo giấy
+                const duration = 3000;
+                const end = Date.now() + duration;
+                (function frame() {
+                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+                    if (Date.now() < end) requestAnimationFrame(frame);
+                }());
+
+                document.getElementById('final-score').innerText = this.state.score;
+                
+                // Thống kê
+                let correctCount = this.state.history.filter(h => h === 1 || h === 3).length;
+                document.getElementById('res-correct').innerText = correctCount + "/30";
+                
+                // Lưu kết quả cuối cùng
+                const finalData = {
+                    name: this.state.name, clan: this.state.clan, score: this.state.score, 
+                    history: this.state.history, status: 'finished'
+                };
+                Database.savePlayer(this.state.uid, finalData);
+                
+                // Render BXH
+                this.renderLeaderboard();
+            },
+
+            renderLeaderboard() {
+                const players = Object.values(Database.getPlayers()).sort((a,b) => b.score - a.score);
+                const list = document.getElementById('lb-list');
+                list.innerHTML = '';
+
+                // Check Top 1
+                if (players.length > 0 && players[0].name === this.state.name) {
+                    document.getElementById('winner-box').style.display = 'block';
+                }
+
+                players.forEach((p, i) => {
+                    let rankClass = i === 0 ? 'rank-1' : (i === 1 ? 'rank-2' : (i === 2 ? 'rank-3' : ''));
+                    list.innerHTML += `
+                        <div class="lb-item ${rankClass}">
+                            <div class="lb-rank">#${i+1}</div>
+                            <div class="lb-info">
+                                <span class="lb-name">${p.name}</span>
+                                <span class="lb-clan">${p.clan}</span>
+                            </div>
+                            <div class="lb-score">${p.score}</div>
+                        </div>
+                    `;
+                });
+            },
+
+            // --- J. ADMIN CONTROL ---
+            openAdmin() {
+                AudioSys.stop(AudioSys.currentBGM);
+                this.switchScreen('sc-admin');
+                
+                // Chạy vòng lặp cập nhật mỗi 1s
+                if (this.adminInterval) clearInterval(this.adminInterval);
+                this.adminInterval = setInterval(() => this.adminLoop(), 1000);
+            },
+
+            adminLoop() {
+                const players = Object.values(Database.getPlayers()).sort((a,b) => b.score - a.score);
+                const tbody = document.getElementById('adm-table-body');
+                tbody.innerHTML = '';
+
+                // Thống kê
+                document.getElementById('adm-count-online').innerText = players.length;
+                document.getElementById('adm-count-finish').innerText = players.filter(p => p.status === 'finished').length;
+
+                if (players.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:#666;">Chưa có kết nối nào...</td></tr>';
+                    return;
+                }
+
+                players.forEach((p, i) => {
+                    // Vẽ chuỗi 30 chấm
+                    let dots = '<div class="matrix-row">';
+                    p.history.forEach(h => {
+                        let c = 'n'; // None
+                        if (h === 1) c = 'c'; // Correct
+                        if (h === 2) c = 'w'; // Wrong
+                        if (h === 3) c = 'b'; // Boss Win
+                        if (h === 4) c = 'w'; // Boss Lose
+                        dots += `<span class="m-dot ${c}"></span>`;
+                    });
+                    dots += '</div>';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>#${i+1}</td>
+                            <td>
+                                <div style="font-weight:bold; color:#fff;">${p.name}</div>
+                                <div style="font-size:0.7rem; color:#aaa;">${p.clan}</div>
+                            </td>
+                            <td>${dots}</td>
+                            <td style="text-align:right; font-weight:bold; color:var(--c-info);">${p.score}</td>
+                        </tr>
+                    `;
+                });
+
+                // Cập nhật bản đồ Visual (Tạo chấm di chuyển)
+                this.renderAdminMap(players);
+            },
+
+            renderAdminMap(players) {
+                const map = document.getElementById('admin-visual-map');
+                // Xóa các node cũ để tránh trùng lặp (Cách đơn giản)
+                Array.from(map.children).forEach(c => {
+                    if (c.classList.contains('map-node')) c.remove();
+                });
+
+                players.forEach(p => {
+                    const node = document.createElement('div');
+                    node.className = 'map-node';
+                    
+                    // Màu theo tộc
+                    if (p.clan === 'forest') node.style.background = '#00f2ff';
+                    else if (p.clan === 'water') node.style.background = '#00ffbf';
+                    else node.style.background = '#ff5100';
+
+                    // Vị trí ngẫu nhiên (Giả lập di chuyển)
+                    // Trong thực tế, có thể lưu toạ độ vào DB để mượt hơn
+                    node.style.left = Math.random() * 90 + 5 + '%';
+                    node.style.top = Math.random() * 80 + 10 + '%';
+                    
+                    map.appendChild(node);
+                });
+            },
+
+            // Các hành động của Admin
+            adminAction(act) {
+                if (act === 'start') {
+                    if (confirm("KÍCH HOẠT TRÒ CHƠI CHO TOÀN BỘ SERVER?")) {
+                        Database.setGameStart();
+                        alert("ĐÃ GỬI TÍN HIỆU START!");
+                    }
+                }
+                if (act === 'reset') {
+                    if (confirm("CẢNH BÁO: XÓA TOÀN BỘ DỮ LIỆU NGƯỜI CHƠI?")) {
+                        Database.resetAll();
+                        this.adminLoop(); // Cập nhật lại bảng trống
+                        alert("Dữ liệu đã được dọn sạch.");
+                    }
+                }
+            },
+
+            // --- K. SYNC & REMOTE ---
+            syncData() {
+                // Đóng gói dữ liệu
+                const playerData = {
+                    name: this.state.name,
+                    clan: this.state.clan,
+                    score: this.state.score,
+                    history: this.state.history,
+                    status: 'playing',
+                    combo: this.state.combo
+                };
+                Database.savePlayer(this.state.uid, playerData);
+            },
+
+            remoteStart() {
+                // Chỉ những ai đang ở màn hình chờ mới vào game
+                if (document.getElementById('sc-waiting').classList.contains('active')) {
+                    this.startGame();
+                }
+            }
+        };
+
+        // KÍCH HOẠT HỆ THỐNG
+        window.onload = () => App.init();
+
+    </script>
+</body>
+</html>
